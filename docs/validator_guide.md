@@ -563,7 +563,7 @@ Now your metrics are pushed to Grafana Cloud.
 
 ### Prepared Dashboard
 I did the steps I described below under "build yourself" and created a ready to use template called
-`dashboard-with-proposals.json`.
+`dashboard-with-proposals.json` https://github.com/fpieper/fpstaking/blob/main/docs/dashboard-with-proposals.json.
 You only need to replace `<your grafana cloud name>` with your own cloud name
 (two times, since it seems the alerts have problems to process a datasource template variable).
 It is a good idea to replace the values and variables in your JSON and then import the complete JSON into Grafana Cloud.

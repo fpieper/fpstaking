@@ -187,7 +187,7 @@ none /run/shm tmpfs defaults,ro 0 0
 Enable changes
 ```
 sudo mount -a
-reboot
+sudo reboot
 ```
 
 

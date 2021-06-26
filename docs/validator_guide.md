@@ -134,8 +134,11 @@ https://linoxide.com/enable-automatic-updates-on-ubuntu-20-04/.
 
 
 ## Kernel live patching
-We will use `canonical-livepatch` to 
-First we need to check whether you are running the `linux-generic` kernel, because 
+We will use `canonical-livepatch` for kernel live patching.
+First we need to check whether you are running the `linux-generic` kernel
+(or any of these `generic, lowlatency, aws, azure, oem, gcp, gke, gkeop`
+https://wiki.ubuntu.com/Kernel/Livepatch - then you can skip installing a different kernel
+and move to enabling `livepatch` directly).
 ```
 uname -a
 ```
@@ -158,7 +161,7 @@ sudo snap install canonical-livepatch
 sudo ua enable livepatch
 ```
 
-To reinstall old kernel (if linux-kvm was previously used) - uninstall linux-generic kernel like above and then:
+To reinstall your old kernel (if linux-kvm was previously used) - uninstall linux-generic kernel like above and then:
 ```
 sudo apt install linux-kvm
 ```

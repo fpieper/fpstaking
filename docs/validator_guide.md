@@ -569,10 +569,9 @@ You only need to replace `<your grafana cloud name>` with your own cloud name
 It is a good idea to replace the values and variables in your JSON and then import the complete JSON into Grafana Cloud.
 
 ### Build Yourself
-Or you can start with the official `Radix Node Dashboard` and modify it a bit for usage in Grafana Cloud:
-```
+Or you can start with the official `Radix Node Dashboard`
 https://github.com/radixdlt/node-runner/blob/main/monitoring/grafana/provisioning/dashboards/sample-node-dashboard.json
-```
+and modify it a bit for usage in Grafana Cloud:
 
 Replace all `"datasource": null` and `"datasource": "-- Grafana --"` with `"datasource":  "$datasource"`.
 

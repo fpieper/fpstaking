@@ -644,6 +644,32 @@ Or any other notification channel if you prefer `PagerDuty` or `Telegram`.
       sudo ufw allow from 1.2.3.4 to any port ssh
       ```
 
+## Restrict Local Access (TTY1, etc)
+We can additionally restrict local access.
+However, this obviously leads results in that you won't be able to login without SSH in emergencies.
+(booting into recovery mode works with most virtual servers, but causes downtime).
+But since we have multiple backup servers this can be a fair trade-off.
+
+Uncomment or add in this file
+```
+sudo nano /etc/pam.d/login
+```
+the following line:
+```
+account required pam_access.so
+```
+
+Then uncomment or add in this file
+```
+sudo nano /etc/security/access.conf
+```
+the following line:
+```
+-:ALL:ALL
+```
+
+For further details:
+- https://linuxconfig.org/how-to-restrict-users-access-on-a-linux-machine
 
 # Logs & Status
 

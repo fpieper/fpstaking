@@ -530,7 +530,7 @@ docker ps (to get the container name)
 docker cp <containername>:/app.jar .
 ```
 
-The metrics exporter does not find the `application.xml` if we run it as `radixdlt`.
+The metrics exporter does not find the `application.yml` if we run it as `radixdlt`.
 Therefore we will run it as our own user `john`.
 Create a directory `metrics-exporter` and copy the `app.jar` to there
 (from your client system with your preferred method):

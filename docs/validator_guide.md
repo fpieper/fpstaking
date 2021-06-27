@@ -539,9 +539,9 @@ sudo mkdir ~/metrics-exporter
 cd ~/metrics-exporter
 ```
 
-Create `application.xml` in the same directory
+Create `application.yml` in the same directory
 ```
-nano application.xml
+nano application.yml
 ```
 with:
 ```

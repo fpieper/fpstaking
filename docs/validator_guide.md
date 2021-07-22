@@ -254,9 +254,9 @@ sudo su - radixdlt
 
 Go to `https://github.com/radixdlt/radixdlt/releases` and check for the latest updates, download and extract them:
 ```
-wget https://github.com/radixdlt/radixdlt/releases/download/1.0-beta.35.1/radixdlt-dist-1.0-beta.35.1.zip
-unzip radixdlt-dist-1.0-beta.35.1.zip
-mv radixdlt-1.0-beta.35.1/ /etc/radixdlt/node
+wget https://github.com/radixdlt/radixdlt/releases/download/1.0-beta.38/radixdlt-dist-1.0-beta.38.zip
+unzip radixdlt-dist-1.0-beta.38.zip
+mv radixdlt-1.0-beta.38/ /etc/radixdlt/node
 cd /etc/radixdlt/node
 ```
 
@@ -278,8 +278,8 @@ Either copy your already existing keyfiles `validator.ks` to `/etc/radixdlt/node
 Use a password generator of your choice to generate a secure password, don't use your regular one because
 it will be written in plain text on disk and loaded as environment variable.
 ```
-./bin/keygen --keystore=secrets-validator/validator.ks --password=SET_YOUR_VALIDATOR_PASSWORD
-./bin/keygen --keystore=secrets-fullnode/validator.ks --password=SET_YOUR_FULLNODE_PASSWORD
+./bin/keygen --keystore=secrets-validator/node-keystore.ks --password=YOUR_VALIDATOR_PASSWORD
+./bin/keygen --keystore=secrets-fullnode/node-keystore.ks --password=YOUR_FULLNODE_PASSWORD
 ```
 
 Remove password from Bash history afterwards, would be better to be able to set the password via a prompt.
@@ -296,13 +296,13 @@ cd /etc/radixdlt/node
 Set java options and the previously used keystore password. I increased the Java heap from 3 GB to 4 GB.
 ```
 cat > /etc/radixdlt/node/secrets-validator/environment << EOF
-JAVA_OPTS="-server -Xms4g -Xmx4g -XX:+HeapDumpOnOutOfMemoryError -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=jks -Djava.security.egd=file:/dev/urandom -DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector"
-RADIX_NODE_KEYSTORE_PASSWORD=SET_YOUR_VALIDATOR_PASSWORD
+JAVA_OPTS="-server -Xms8g -Xmx8g -XX:+HeapDumpOnOutOfMemoryError -XX:+UseCompressedOops -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=jks -Djava.security.egd=file:/dev/urandom -DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector"
+RADIX_NODE_KEYSTORE_PASSWORD=YOUR_VALIDATOR_PASSWORD
 EOF
 
 cat > /etc/radixdlt/node/secrets-fullnode/environment << EOF
-JAVA_OPTS="-server -Xms4g -Xmx4g -XX:+HeapDumpOnOutOfMemoryError -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=jks -Djava.security.egd=file:/dev/urandom -DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector"
-RADIX_NODE_KEYSTORE_PASSWORD=SET_YOUR_FULLNODE_PASSWORD
+JAVA_OPTS="-server -Xms8g -Xmx8g -XX:+HeapDumpOnOutOfMemoryError -XX:+UseCompressedOops -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=jks -Djava.security.egd=file:/dev/urandom -DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector"
+RADIX_NODE_KEYSTORE_PASSWORD=YOUR_FULLNODE_PASSWORD
 EOF
 ```
 
@@ -314,47 +314,52 @@ chmod 500 /etc/radixdlt/node/secrets-validator && chmod 400 /etc/radixdlt/node/s
 chmod 500 /etc/radixdlt/node/secrets-fullnode && chmod 400  /etc/radixdlt/node/secrets-fullnode/*
 ```
 
-## Universe.json
-We get the `universe.json` which is necessary for bootstrapping our node.
-```
-curl -k https://52.48.95.182/universe.json > /etc/radixdlt/node/universe.json
-```
-
 ## Node Configuration
 Create and adapt the node configuration to your needs.
-Especially, set the host IP to your own IP (`curl ifconfig.me`) and
+Especially, set the `network.host_ip` to your own IP (`curl ifconfig.me`) and
 binding both apis to localhost `127.0.0.1`.
+
 
 ```
 nano /etc/radixdlt/node/default.config
 ```
+
 ```
 ntp=false
 ntp.pool=pool.ntp.org
 
-universe.location=/etc/radixdlt/node/universe.json
-node.key.path=/etc/radixdlt/node/secrets/validator.ks
-network.tcp.listen_port=30000
-network.tcp.broadcast_port=30000
-network.seeds=52.48.95.182:30000
-host.ip=1.2.3.4
+network.id=2
+node.key.path=/etc/radixdlt/node/secrets/node-keystore.ks
+network.p2p.listen_port=30000
+network.p2p.broadcast_port=30000
+network.p2p.seed_nodes=radix://tn1qt9kqzzqyj27zv4n67f2jrzgd24hsxfwe8d4kw9j4msze7rpdg3guvk07jy@54.76.86.46:30000
+network.host_ip=1.2.3.4
 db.location=/data
 
-node_api.port=3333
-client_api.enable=false
-client_api.port=8080
+api.node.port=3333
+api.archive.port=8080
 log.level=debug
+
+api.archive.enable=false
+api.construction.enable=false
+api.account.enable=true
+api.health.enable=true
+api.metrics.enable=true
+api.system.enable=true
+api.validation.enable=true
+api.version.enable=true
 
 api.node.bind.address=127.0.0.1
 api.archive.bind.address=127.0.0.1
 ```
 
-Setting `client_api.enable=true` enables archive mode otherwise the node is running as full node.
-`api.node.bind.address` and `api.archive.bind.address` is not read in the current beta,
-but this will work in one of the next updates.
+Setting `api.archive.enable=true` enables archive mode otherwise the node is running as full node.
+Then you may also want to enable the construction endpoint with `api.construction.enable=true`.
+
+You also may want set a `seed_node` from another region instead of the one from the `EU` above.
 
 For further detail and explanation check out the official documentation
-https://docs.radixdlt.com/main/node/standalone-install-node.html#create-node-configuration-file-for-standalone-install
+https://docs.radixdlt.com/main/node/systemd-install-node.html#_configuration
 
 ## Systemd Service
 Create the radixdlt-node service with the following config.
@@ -457,26 +462,65 @@ However, the metrics will be included into the `radixnode` and the separate `met
 anymore.
 
 ## Registering as a validator
-This is based on the official documentation https://docs.radixdlt.com/main/node/standalone-register-as-validator.html.
+This is based on the official documentation https://docs.radixdlt.com/main/node/systemd-register-as-validator.html.
 Please take a look for further details, I mainly added it here because our endpoints are slightly different.
 
-We first get your `address` with:
+We first get the node's wallet address (`address`) with:
 ```
-curl -s -X  GET 'http://localhost:3333/node'
+curl -s -d '{ "jsonrpc": "2.0", "method": "account.get_info", "params": [], "id":1}' -H "Content-Type: application/json" -X POST "http://localhost:3333/account" | jq
 ```
 
-Then send some XRD to this address via your Radix Desktop Wallet.
-
-Register your node (or more specifically your key as validator). Adapt the parameters as you like,
-especially your `name` and `url`
+We can also get both the node's wallet address (`owner` - prefixed with `tv`) and the validator address (`address`)
 ```
-curl -s -X POST 'http://localhost:3333/node/execute' -H 'Content-Type: application/json' \
-  --data-raw '{"actions":[{"action":"RegisterValidator","params":{"name": "My Validator", "url": "https://my-validator.com" }}]}'
+curl -s -d '{"jsonrpc": "2.0", "method": "validation.get_node_info", "params": [], "id": 1}' -H "Content-Type: application/json" -X POST "http://localhost:3333/validation"
+```
+
+Then send at least 30 XRD to `wallet address` via your Radix Desktop Wallet.
+
+Register your node (or more specifically your key as validator).
+Adapt all parameters as you need and like, especially your `name` and `url`
+```
+curl -s -X POST 'http://localhost:3333/account' -H 'Content-Type: application/json' \
+-d '{"jsonrpc": "2.0","method": "account.submit_transaction_single_step",
+"params":
+{"actions": [
+{"type": "RegisterValidator",
+"validator": "tv1qt6354z62uzc870padneek7dxua2fcegcsq4mhmw4jej84kr6t2vzrzsf6w"},
+{"type": "UpdateValidatorMetadata",
+"name": "Florian Pieper Staking",
+"url": "https://florianpieperstaking.com",
+"validator": "tv1qt6354z62uzc870padneek7dxua2fcegcsq4mhmw4jej84kr6t2vzrzsf6w"},
+{"type": "UpdateValidatorFee",
+"validator": "tv1qt6354z62uzc870padneek7dxua2fcegcsq4mhmw4jej84kr6t2vzrzsf6w",
+"validatorFee": 4.3},
+{"type": "UpdateAllowDelegationFlag",
+"validator": "tv1qt6354z62uzc870padneek7dxua2fcegcsq4mhmw4jej84kr6t2vzrzsf6w",
+"allowDelegation": true},
+{"type": "UpdateValidatorOwnerAddress",
+"validator": "tv1qt6354z62uzc870padneek7dxua2fcegcsq4mhmw4jej84kr6t2vzrzsf6w",
+"owner": "tdx1qspwq3a56n6ua34w4a0660hw9leaqte4m9c7z6y2peqlfw9g65pm2tcljt7dn" }
+]}, "id": 1}' | jq
 ```
 
 You can then check if everything worked:
 ```
-curl -s -X POST http://localhost:3333/node/validator
+curl -s -d '{"jsonrpc": "2.0", "method": "validation.get_node_info", "params": [], "id": 1}' -H "Content-Type: application/json" -X POST "http://localhost:3333/validation" | jq
+```
+
+Hint: the above request can be also used to update the values.
+Just use one update action instead of all like above.
+
+For example to update the validator metadata you can use this request.
+```
+curl -s -X POST 'http://localhost:3333/account' -H 'Content-Type: application/json' \
+-d '{"jsonrpc": "2.0","method": "account.submit_transaction_single_step",
+"params":
+{"actions": [
+{"type": "UpdateValidatorMetadata",
+"name": "Florian Pieper Staking",
+"url": "https://florianpieperstaking.com",
+"validator": "tv1qt6354z62uzc870padneek7dxua2fcegcsq4mhmw4jej84kr6t2vzrzsf6w"}
+]}, "id": 1}' | jq
 ```
 
 
@@ -505,7 +549,7 @@ configs:
   scrape_configs:
     - job_name: radixnode
       static_configs:
-        - targets: ['localhost:8099']
+        - targets: ['localhost:3333']
   remote_write:
     - basic_auth:
       password: secret
@@ -517,49 +561,6 @@ And restart to activate the new settings:
 ```
 sudo systemctl restart grafana-agent
 ```
-
-## Metrics Exporter
-This is only needed temporarily until the `/metrics` endpoint is directly offered
-by the radix node (probably next version).
-
-
-First extract the `app.jar` from the metrics exporter image (better do this on a different machine):
-```
-docker run -d radixdlt/metrics-exporter:1.0-beta.35
-docker ps (to get the container name)
-docker cp <containername>:/app.jar .
-```
-
-The metrics exporter does not find the `application.yml` if we run it as `radixdlt`.
-Therefore we will run it as our own user `john`.
-Create a directory `metrics-exporter` and copy the `app.jar` to there
-(from your client system with your preferred method):
-```
-sudo mkdir ~/metrics-exporter
-cd ~/metrics-exporter
-```
-
-Create `application.yml` in the same directory
-```
-nano application.yml
-```
-with:
-```
-metrics-exporter:
-  root-api-url: http://localhost:3333
-  collect-json-rpc-metrics: true
-  root-json-rpc-url: http://localhost:8080
-  rmi-host: #core:9010 # used to collect JMX metrics, will be placed in a URL like so: service:jmx:rmi:///jndi/rmi://{rmi-host}/jmxrmi
-  ledger-folder: #./RADIXDB # will measure the size of this folder
-  container-name:
-```
-
-Start the metrics exporter (in a tmux session):
-```
-tmux
-java -jar app.jar
-```
-Now your metrics are pushed to Grafana Cloud.
 
 
 ## Radix Dashboard Template
@@ -678,18 +679,23 @@ Shows radix node logs with colours:
 sudo journalctl -f -u radixdlt-node --output=cat
 ```
 
-Shows `target_state_version` (versions are kind of Radix's blocks in Olympia - how many blocks are synced):
+Shows node health (`BOOTING`, `SYNCING`, `UP`, `STALLED`, `OUT_OF_SYNC`)
 ```
-curl -s localhost:3333/system/info | jq ".info.counters.sync.target_state_version"
+curl -s localhost:3333/health | jq
+```
+
+Shows `targetStateVersion` (versions are kind of Radix's blocks in Olympia - how many blocks are synced):
+```
+curl -s -X POST 'http://localhost:3333/system' -d '{"jsonrpc": "2.0", "method": "sync.get_data", "params": [], "id": 1}' | jq ".result.targetStateVersion"
 ```
 
 Shows the difference sync difference to the network.
-Should be `0` if the node is fully synced (if `target_state_version` isn't `0`)
+Should be `0` if the node is fully synced (if `targetCurrentDiff` isn't `0`)
 ```
-curl -s localhost:3333/system/info | jq ".info.counters.sync.target_current_diff"
+curl -s -X POST 'http://localhost:3333/system' -d '{"jsonrpc": "2.0", "method": "sync.get_data", "params": [], "id": 1}' | jq
 ```
 
 Shows current validator information:
 ```
-curl -s -X POST 'http://localhost:3333/node/validator' | jq
+curl -s -d '{"jsonrpc": "2.0", "method": "validation.get_node_info", "params": [], "id": 1}' -H "Content-Type: application/json" -X POST "http://localhost:3333/validation" | jq
 ```

@@ -478,7 +478,15 @@ curl -s -d '{"jsonrpc": "2.0", "method": "validation.get_node_info", "params": [
 Then send at least 30 XRD to `wallet address` via your Radix Desktop Wallet.
 
 Register your node (or more specifically your key as validator).
-Adapt all parameters as you need and like, especially your `name` and `url`
+Think about and adapt every parameter, especially:
+- `validator` - the validator address prefixed with `tv`
+- `name`
+- `url`
+- `validatorFee` - specified to up to two decimals of precision. e.g. 1 or 1.75
+- `allowDelegation` - if false, only stake from owner below will be accepted
+- `owner` - the owner receives all validator fees
+  
+Please check the official documentation for further details https://docs.radixdlt.com/main/node/systemd-register-as-validator.html#call-endpoint-to-register-validator
 ```
 curl -s -X POST 'http://localhost:3333/account' -H 'Content-Type: application/json' \
 -d '{"jsonrpc": "2.0","method": "account.submit_transaction_single_step",

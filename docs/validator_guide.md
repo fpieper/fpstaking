@@ -193,7 +193,7 @@ sudo reboot
 
 # Radix Node
 We install the Radix node based on the standalone instructions form the documentation
-https://docs.radixdlt.com/main/node/standalone-install-node.html. 
+https://docs.radixdlt.com/main/node/systemd-install-node.html. 
 
 ## Dependencies
 Install the necessary dependencies and initiate randomness to securely generate keys.

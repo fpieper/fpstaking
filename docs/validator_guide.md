@@ -286,7 +286,7 @@ mkdir /etc/radixdlt/node/secrets-fullnode
 ```
 
 ### Key Copy or Generation
-The idea is to have two folders with configuration for a validator and a fullnode setting with different keys.
+The idea is to have two folders with configurations for a validator and a fullnode setting with different keys.
 `/etc/radixdlt/node/secrets-validator` contains the configuration for a validator.
 `/etc/radixdlt/node/secrets-fullnode` contains the configuration for a fullnode.
 We will later to be able to switch between being a validator or fullnode.
@@ -300,8 +300,6 @@ it will be written in plain text on disk and loaded as environment variable.
 ./bin/keygen --keystore=secrets-fullnode/node-keystore.ks --password=YOUR_FULLNODE_PASSWORD
 ```
 
-Remove password from Bash history afterwards, would be better to be able to set the password via a prompt.
-
 Don't forget to set the ownership and permissions (and switch user again):
 ```
 sudo chown -R radixdlt:radixdlt /etc/radixdlt/node/secrets-validator/
@@ -309,6 +307,11 @@ sudo chown -R radixdlt:radixdlt /etc/radixdlt/node/secrets-fullnode/
 sudo su - radixdlt
 cd /etc/radixdlt/node
 ```
+
+To achieve high uptime, it is important to also have a backup node for maintenance or failover.
+Your main and backup node will have the same validator key (node-keystore.ks), but they both have different fullnode keys
+(which leads to 3 different keys in total: 1 key used as validator, 2 keys used for the full nodes).
+Please also checkout this article for further details: https://docs.radixdlt.com/main/node/maintaining-uptime.html.
 
 ### Environment file
 Set java options and the previously used keystore password. I increased the Java heap from 3 GB to 4 GB.

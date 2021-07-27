@@ -243,8 +243,9 @@ sudo mkdir /etc/radixdlt/
 sudo chown radixdlt:radixdlt -R /etc/radixdlt
 sudo mkdir /data
 sudo chown radixdlt:radixdlt /data
+sudo mkdir -p /opt/radixdlt/releases
+sudo chown -R radixdlt:radixdlt /opt/radixdlt
 ```
-
 
 ## Install Node
 Switch to radixdlt user first
@@ -252,11 +253,28 @@ Switch to radixdlt user first
 sudo su - radixdlt
 ```
 
-Go to `https://github.com/radixdlt/radixdlt/releases` and check for the latest updates, download and extract them:
+I developed a seamless install and update script which downloads the last release
+from `https://github.com/radixdlt/radixdlt/releases` and waits until one proposal was made to
+restart the node to minimise the downtime.
+If the interval between proposals is higher than around 5 seconds then there will be zero missed proposals:
 ```
-wget https://github.com/radixdlt/radixdlt/releases/download/1.0-beta.38/radixdlt-dist-1.0-beta.38.zip
-unzip radixdlt-dist-1.0-beta.38.zip
-mv radixdlt-1.0-beta.38/ /etc/radixdlt/node
+curl -Lo /opt/radixdlt/update-radix.sh \
+    https://github.com/fpieper/fpstaking/blob/main/docs/scripts/update-radix.sh && \
+chmod +x /opt/radixdlt/update-radix.sh
+```
+
+Installs or updates the radix node with the latest available version.
+```
+/opt/radixdlt/update-radix.sh
+```
+
+The argument `force` bypasses the check of the current installed version (mostly useful for testing). 
+```
+/opt/radixdlt/update-radix.sh force
+```
+
+Change directory for following steps.
+```
 cd /etc/radixdlt/node
 ```
 
@@ -317,40 +335,12 @@ chmod 500 /etc/radixdlt/node/secrets-fullnode && chmod 400  /etc/radixdlt/node/s
 ## Node Configuration
 Create and adapt the node configuration to your needs.
 Especially, set the `network.host_ip` to your own IP (`curl ifconfig.me`) and
-binding both apis to localhost `127.0.0.1`.
-
+bind both apis to localhost `127.0.0.1`.
 
 ```
+curl -Lo /etc/radixdlt/node/default.config \
+    https://raw.githubusercontent.com/fpieper/fpstaking/main/docs/config/default.stokenet.validator.config
 nano /etc/radixdlt/node/default.config
-```
-
-```
-ntp=false
-ntp.pool=pool.ntp.org
-
-network.id=2
-node.key.path=/etc/radixdlt/node/secrets/node-keystore.ks
-network.p2p.listen_port=30000
-network.p2p.broadcast_port=30000
-network.p2p.seed_nodes=radix://tn1qt9kqzzqyj27zv4n67f2jrzgd24hsxfwe8d4kw9j4msze7rpdg3guvk07jy@54.76.86.46:30000
-network.host_ip=1.2.3.4
-db.location=/data
-
-api.node.port=3333
-api.archive.port=8080
-log.level=debug
-
-api.archive.enable=false
-api.construction.enable=false
-api.account.enable=true
-api.health.enable=true
-api.metrics.enable=true
-api.system.enable=true
-api.validation.enable=true
-api.version.enable=true
-
-api.node.bind.address=127.0.0.1
-api.archive.bind.address=127.0.0.1
 ```
 
 Setting `api.archive.enable=true` enables archive mode otherwise the node is running as full node.
@@ -364,32 +354,9 @@ https://docs.radixdlt.com/main/node/systemd-install-node.html#_configuration
 ## Systemd Service
 Create the radixdlt-node service with the following config.
 ```
-nano /etc/systemd/system/radixdlt-node.service
+curl -Lo /etc/systemd/system/radixdlt-node.service \
+    https://raw.githubusercontent.com/fpieper/fpstaking/main/docs/config/radixdlt-node.service
 ```
-```
-[Unit]
-Description=Radix DLT Validator
-After=local-fs.target
-After=network-online.target
-After=nss-lookup.target
-After=time-sync.target
-After=systemd-journald-dev-log.socket
-Wants=network-online.target
-
-[Service]
-EnvironmentFile=/etc/radixdlt/node/secrets/environment
-
-User=radixdlt
-WorkingDirectory=/etc/radixdlt/node
-ExecStart=/etc/radixdlt/node/bin/radixdlt
-SuccessExitStatus=143
-TimeoutStopSec=10
-Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target
-```
-
 
 Also we enable the service at boot:
 ```
@@ -408,58 +375,32 @@ to the corresponding directory. For example to run in validator mode:
 To streamline this process of promoting in case of a failover from our primary node, I wrote a small script.
 Create the file `/etc/radixdlt/node/switch-mode.sh` (and set permissions) 
 ```
-nano /etc/radixdlt/node/switch-mode.sh
-chmod +x /etc/radixdlt/node/switch-mode.sh
-```
-with the following content:
-```
-#!/bin/bash
-
-check_return_code () {
-    if [[ $? -eq 0 ]]
-    then
-        echo "Successfully switched mode and restarted."
-    else
-        echo "Error: Failed to switch mode and restart."
-    fi
-}
-
-if [[ "$1" == "validator" ]]
-then
-    echo "Restarting Radix Node in validator mode ..."
-    sudo systemctl stop radixdlt-node && \
-    rm -f /etc/radixdlt/node/secrets && \
-    ln -s /etc/radixdlt/node/secrets-validator /etc/radixdlt/node/secrets && \
-    sudo systemctl start radixdlt-node
-    check_return_code
-elif [[ "$1" == "fullnode" ]]
-then
-    echo "Restarting Radix Node in fullnode mode ..."
-    sudo systemctl stop radixdlt-node && \
-    rm -f /etc/radixdlt/node/secrets && \
-    ln -s /etc/radixdlt/node/secrets-fullnode /etc/radixdlt/node/secrets && \
-    sudo systemctl start radixdlt-node
-    check_return_code
-fi
+curl -Lo /opt/radixdlt/switch-mode.sh \
+    https://github.com/fpieper/fpstaking/blob/main/docs/scripts/switch-mode.sh && \
+chmod +x /opt/radixdlt/switch-mode.sh
 ```
 
 To switch the mode simply pass the mode as first argument. Possible modes are: `validator` and `fullnode`
 ```
-/etc/radixdlt/node/switch-mode.sh <mode>
+/opt/radixdlt/switch-mode.sh <mode>
 ```
 
 For example:
 ```
-/etc/radixdlt/node/switch-mode.sh validator
-/etc/radixdlt/node/switch-mode.sh fullnode
+/opt/radixdlt/switch-mode.sh validator
+/opt/radixdlt/switch-mode.sh fullnode
 ```
 
 For bootstrapping a new validator it is a good idea to start as a `fullnode` and then after full sync
 switch to `validator` mode because this also directly tests failover or promoting to validator works fine.
 
-Keep in mind to restart the `metrics-exporter` after switching to validator mode (it is later described how).
-However, the metrics will be included into the `radixnode` and the separate `metrics-exporter` will not be needed
-anymore.
+Switching to fullnode waits for the next made proposal still in validator mode
+and stops immediately afterwards to minimise downtime (or specifically the missed proposals)  
+
+For maintenance failover just open SSH connections to both of your servers side-by-side.
+1. Switch to fullnode mode on your validator: `/opt/radixdlt/switch-mode.sh fullnode` 
+2. Wait until switching mode was successful
+3. Immediately switch to validator mode on your backup node: `/opt/radixdlt/switch-mode.sh validator`
 
 ## Registering as a validator
 This is based on the official documentation https://docs.radixdlt.com/main/node/systemd-register-as-validator.html.
@@ -472,7 +413,7 @@ curl -s -d '{ "jsonrpc": "2.0", "method": "account.get_info", "params": [], "id"
 
 We can also get both the node's wallet address (`owner` - prefixed with `tv`) and the validator address (`address`)
 ```
-curl -s -d '{"jsonrpc": "2.0", "method": "validation.get_node_info", "params": [], "id": 1}' -H "Content-Type: application/json" -X POST "http://localhost:3333/validation"
+curl -s -d '{"jsonrpc": "2.0", "method": "validation.get_node_info", "params": [], "id": 1}' -H "Content-Type: application/json" -X POST "http://localhost:3333/validation" | jq
 ```
 
 Then send at least 30 XRD to `wallet address` via your Radix Desktop Wallet.
@@ -598,7 +539,7 @@ add the variable `datasource` (you need to lookup the correct datasource name in
       "hide": 2,
       "label": null,
       "name": "instance",
-      "query": "localhost:8099",
+      "query": "localhost:3333",
       "skipUrlSync": false,
       "type": "constant"
     },
@@ -691,6 +632,17 @@ Shows node health (`BOOTING`, `SYNCING`, `UP`, `STALLED`, `OUT_OF_SYNC`)
 ```
 curl -s localhost:3333/health | jq
 ```
+
+Show account information:
+```
+curl -s -d '{ "jsonrpc": "2.0", "method": "account.get_info", "params": [], "id":1}' -H "Content-Type: application/json" -X POST "http://localhost:3333/account" | jq
+```
+
+Show node information:
+```
+curl -s -d '{"jsonrpc": "2.0", "method": "validation.get_node_info", "params": [], "id": 1}' -H "Content-Type: application/json" -X POST "http://localhost:3333/validation" | jq
+```
+
 
 Shows `targetStateVersion` (versions are kind of Radix's blocks in Olympia - how many blocks are synced):
 ```

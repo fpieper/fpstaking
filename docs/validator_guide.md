@@ -259,7 +259,7 @@ restart the node to minimise the downtime.
 If the interval between proposals is higher than around 5 seconds then there will be zero missed proposals:
 ```
 curl -Lo /opt/radixdlt/update-radix.sh \
-    https://github.com/fpieper/fpstaking/blob/main/docs/scripts/update-radix.sh && \
+    https://raw.githubusercontent.com/fpieper/fpstaking/main/docs/scripts/update-node.sh && \
 chmod +x /opt/radixdlt/update-radix.sh
 ```
 
@@ -376,7 +376,7 @@ To streamline this process of promoting in case of a failover from our primary n
 Create the file `/etc/radixdlt/node/switch-mode.sh` (and set permissions) 
 ```
 curl -Lo /opt/radixdlt/switch-mode.sh \
-    https://github.com/fpieper/fpstaking/blob/main/docs/scripts/switch-mode.sh && \
+    https://raw.githubusercontent.com/fpieper/fpstaking/main/docs/scripts/switch-mode.sh && \
 chmod +x /opt/radixdlt/switch-mode.sh
 ```
 

@@ -50,4 +50,10 @@ then
     ln -s /etc/radixdlt/node/secrets-fullnode /etc/radixdlt/node/secrets && \
     sudo systemctl start radixdlt-node
     check_return_code
+else
+    echo "Radix Node Switch Mode"
+    echo ""
+    echo "Usage:"
+    echo "  switch-mode fullnode      Switch radix node to fullnode mode."
+    echo "  switch-mode validator     Switch radix node to validator mode."
 fi

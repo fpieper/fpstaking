@@ -16,7 +16,7 @@ get_completed_proposals () {
 
 echo "Checking for latest radix node version ..."
 NODE_URL=$(curl -s https://api.github.com/repos/radixdlt/radixdlt/releases/latest | \
-           jq -r '.assets[] | select(.browser_download_url|split("/")|last|test("^radixdlt-dist-1.0-beta.[0-9.]*zip")) | .browser_download_url')
+           jq -r '.assets[] | select(.browser_download_url|split("/")|last|test("^radixdlt-dist-[0-9.]*zip")) | .browser_download_url')
 echo "Found url:" "$NODE_URL"
 NODE_ARCHIVE=$(basename "$NODE_URL")
 

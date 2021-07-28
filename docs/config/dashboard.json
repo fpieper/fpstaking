@@ -82,7 +82,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "up{instance=\"$instance\"}",
+          "expr": "up{instance=\"$instance\", job=\"$job\"}",
           "format": "time_series",
           "instant": true,
           "interval": "",
@@ -155,7 +155,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "rate(info_counters_sync_target_state_version{instance=\"$instance\"}[1m])",
+          "expr": "rate(info_counters_sync_target_state_version{instance=\"$instance\", job=\"$job\"}[1m])",
           "hide": false,
           "instant": false,
           "interval": "",
@@ -239,7 +239,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "rate(info_counters_sync_target_state_version{instance=\"$instance\"}[$__rate_interval])",
+          "expr": "rate(info_counters_sync_target_state_version{instance=\"$instance\", job=\"$job\"}[$__rate_interval])",
           "hide": false,
           "instant": false,
           "interval": "",
@@ -299,7 +299,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "info_counters_time_duration{instance=\"$instance\"}",
+          "expr": "info_counters_time_duration{instance=\"$instance\", job=\"$job\"}",
           "instant": false,
           "interval": "",
           "legendFormat": "",
@@ -359,7 +359,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "nodeinfo{instance=\"$instance\"}",
+          "expr": "nodeinfo{instance=\"$instance\", job=\"$job\"}",
           "instant": true,
           "interval": "",
           "legendFormat": "{{ branch_and_commit }}",
@@ -448,7 +448,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "info_epochmanager_currentview_view{instance=\"$instance\"}",
+          "expr": "info_epochmanager_currentview_view{instance=\"$instance\", job=\"$job\"}",
           "format": "time_series",
           "instant": false,
           "interval": "",
@@ -505,7 +505,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "info_epochmanager_currentview_epoch{instance=\"$instance\"}",
+          "expr": "info_epochmanager_currentview_epoch{instance=\"$instance\", job=\"$job\"}",
           "format": "time_series",
           "instant": false,
           "interval": "",
@@ -562,7 +562,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "nodeinfo{instance=\"$instance\"}",
+          "expr": "nodeinfo{instance=\"$instance\", job=\"$job\"}",
           "format": "time_series",
           "instant": true,
           "interval": "",
@@ -644,7 +644,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "nodeinfo{instance=\"$instance\", validator_registered=\"true\"}",
+          "expr": "nodeinfo{instance=\"$instance\", job=\"$job\", validator_registered=\"true\"}",
           "instant": true,
           "interval": "",
           "legendFormat": "",
@@ -702,7 +702,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "nodeinfo{instance=\"$instance\"}",
+          "expr": "nodeinfo{instance=\"$instance\", job=\"$job\"}",
           "format": "time_series",
           "instant": true,
           "interval": "",
@@ -774,7 +774,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "nodeinfo{instance=\"$instance\"}",
+          "expr": "nodeinfo{instance=\"$instance\", job=\"$job\"}",
           "instant": true,
           "interval": "",
           "legendFormat": "{{ key }}",
@@ -857,7 +857,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "nodeinfo{instance=\"$instance\", is_in_validator_set=\"true\"}",
+          "expr": "nodeinfo{instance=\"$instance\", job=\"$job\", is_in_validator_set=\"true\"}",
           "instant": true,
           "interval": "",
           "legendFormat": "",
@@ -916,7 +916,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "balance_xrd{instance=\"$instance\"}",
+          "expr": "balance_xrd{instance=\"$instance\", job=\"$job\"}",
           "instant": true,
           "interval": "",
           "legendFormat": "",
@@ -973,7 +973,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "validator_total_stake{instance=\"$instance\"}",
+          "expr": "validator_total_stake{instance=\"$instance\", job=\"$job\"}",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -1033,7 +1033,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "info_counters_mempool_count{instance=\"$instance\"}",
+          "expr": "info_counters_mempool_count{instance=\"$instance\", job=\"$job\"}",
           "instant": true,
           "interval": "",
           "legendFormat": "",
@@ -1091,7 +1091,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "rate(info_counters_mempool_add_success{instance=\"$instance\"}[$__rate_interval])",
+          "expr": "rate(info_counters_mempool_add_success{instance=\"$instance\", job=\"$job\"}[$__rate_interval])",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -1162,7 +1162,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "total_peers{instance=\"$instance\"}",
+          "expr": "total_peers{instance=\"$instance\", job=\"$job\"}",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -1218,7 +1218,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "total_peers{instance=\"$instance\"}",
+          "expr": "total_peers{instance=\"$instance\", job=\"$job\"}",
           "interval": "",
           "legendFormat": "Peers",
           "refId": "A"
@@ -1315,7 +1315,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "total_validators{instance=\"$instance\"}",
+          "expr": "total_validators{instance=\"$instance\", job=\"$job\"}",
           "instant": true,
           "interval": "",
           "legendFormat": "",
@@ -1368,7 +1368,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "total_validators{instance=\"$instance\"}",
+          "expr": "total_validators{instance=\"$instance\", job=\"$job\"}",
           "interval": "",
           "legendFormat": "Validators",
           "refId": "A"
@@ -1525,7 +1525,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "info_counters_bft_proposals_made{}",
+          "expr": "info_counters_bft_proposals_made{instance=\"$instance\", job=\"$job\"}",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -1555,7 +1555,17 @@
         "hide": 2,
         "label": null,
         "name": "instance",
-        "query": "localhost:8099",
+        "query": "localhost:3333",
+        "skipUrlSync": false,
+        "type": "constant"
+      },
+      {
+        "description": "If case you are running many nodes, use this var to target a single on",
+        "error": null,
+        "hide": 2,
+        "label": null,
+        "name": "job",
+        "query": "radix-validator",
         "skipUrlSync": false,
         "type": "constant"
       },

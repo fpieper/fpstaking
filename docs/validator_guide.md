@@ -225,6 +225,10 @@ radixdlt ALL= NOPASSWD: /bin/systemctl stop radixdlt-node
 radixdlt ALL= NOPASSWD: /bin/systemctl start radixdlt-node
 radixdlt ALL= NOPASSWD: /bin/systemctl reload radixdlt-node
 radixdlt ALL= NOPASSWD: /bin/systemctl status radixdlt-node
+radixdlt ALL= NOPASSWD: /bin/systemctl status radixdlt-node
+radixdlt ALL= NOPASSWD: /bin/systemctl restart grafana-agent
+radixdlt ALL= NOPASSWD: /bin/sed -i s/fullnode/validator/g /etc/grafana-agent.yaml
+radixdlt ALL= NOPASSWD: /bin/sed -i s/validator/fullnode/g /etc/grafana-agent.yaml
 EOF'
 ```
 
@@ -499,7 +503,7 @@ prometheus:
 configs:
 - name: integrations
   scrape_configs:
-    - job_name: radixnode
+    - job_name: radix-fullnode
       static_configs:
         - targets: ['localhost:3333']
   remote_write:
@@ -508,6 +512,7 @@ configs:
       username: 123456
       url: https://prometheus-blocks-prod-us-central1.grafana.net/api/prom/push
 ```
+Also set the job name to your current running mode (either `radix-fullnode` or `radix-validator`).
 
 And restart to activate the new settings:
 ```
@@ -519,7 +524,7 @@ sudo systemctl restart grafana-agent
 
 ### Prepared Dashboard
 I did the steps I described below under "build yourself" and created a ready to use template called
-`dashboard-with-proposals.json` https://github.com/fpieper/fpstaking/blob/main/docs/dashboard-with-proposals.json.
+`dashboard.json` https://github.com/fpieper/fpstaking/blob/main/docs/config/dashboard.json.
 You only need to replace `<your grafana cloud name>` with your own cloud name
 (two times, since it seems the alerts have problems to process a datasource template variable).
 It is a good idea to replace the values and variables in your JSON and then import the complete JSON into Grafana Cloud.

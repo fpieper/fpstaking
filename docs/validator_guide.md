@@ -262,19 +262,19 @@ from `https://github.com/radixdlt/radixdlt/releases` and waits until one proposa
 restart the node to minimise the downtime.
 If the interval between proposals is higher than around 5 seconds then there will be zero missed proposals:
 ```
-curl -Lo /opt/radixdlt/update-radix.sh \
+curl -Lo /opt/radixdlt/update-node.sh \
     https://raw.githubusercontent.com/fpieper/fpstaking/main/docs/scripts/update-node.sh && \
-chmod +x /opt/radixdlt/update-radix.sh
+chmod +x /opt/radixdlt/update-node.sh
 ```
 
 Installs or updates the radix node with the latest available version.
 ```
-/opt/radixdlt/update-radix.sh
+/opt/radixdlt/update-node.sh
 ```
 
 The argument `force` bypasses the check of the current installed version (mostly useful for testing). 
 ```
-/opt/radixdlt/update-radix.sh force
+/opt/radixdlt/update-node.sh force
 ```
 
 Change directory for following steps.
@@ -536,7 +536,7 @@ and modify it a bit for usage in Grafana Cloud:
 
 Replace all `"datasource": null` and `"datasource": "-- Grafana --"` with `"datasource":  "$datasource"`.
 
-Then modify and extends the variables in `templating`. Change the `instance` variable to `localhost:8099` and
+Then modify and extends the variables in `templating`. Change the `instance` variable to `localhost:3333` and
 add the variable `datasource` (you need to lookup the correct datasource name in Grafana Cloud):
 ```
 "templating": {
@@ -565,7 +565,7 @@ add the variable `datasource` (you need to lookup the correct datasource name in
 },
 ```
 
-Checkout `dashboard-with-proposals.json` to see how I added `proposals_made`. 
+Checkout `dashboard.json` to see how I added `proposals_made`. 
 
 Afterwards, you can now import your dashboard into Grafana Cloud, and the correct values should show up.
 

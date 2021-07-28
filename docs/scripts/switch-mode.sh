@@ -17,9 +17,24 @@ get_completed_proposals () {
 check_return_code () {
     if [[ $? -eq 0 ]]
     then
-        echo "Successfully switched mode and restarted."
+        echo "Successfully switched radix mode and restarted."
     else
-        echo "Error: Failed to switch mode and restart."
+        echo "Error: Failed to switch radix mode and restart."
+    fi
+}
+
+switch_grafana () {
+    if [[ ! -f /etc/grafana-agent.yaml ]]
+    then
+        return
+    fi
+    if
+        sudo sed -i "s/$1/$2/g" /etc/grafana-agent.yaml && \
+        sudo systemctl restart grafana-agent
+    then
+        echo "Successfully switched grafana agent to $2 mode."
+    else
+        echo "Error: Failed to switch grafana agent to $2 mode."
     fi
 }
 
@@ -31,6 +46,7 @@ then
     ln -s /etc/radixdlt/node/secrets-validator /etc/radixdlt/node/secrets && \
     sudo systemctl start radixdlt-node
     check_return_code
+    switch_grafana "fullnode" $1
 elif [[ "$1" == "fullnode" ]]
 then
     if [[ $IS_VALIDATING == true ]]
@@ -50,6 +66,7 @@ then
     ln -s /etc/radixdlt/node/secrets-fullnode /etc/radixdlt/node/secrets && \
     sudo systemctl start radixdlt-node
     check_return_code
+    switch_grafana "validator" $1
 else
     echo "Radix Node Switch Mode"
     echo ""

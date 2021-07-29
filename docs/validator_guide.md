@@ -355,7 +355,10 @@ Then you may also want to enable the construction endpoint with `api.constructio
 
 You also may want set a `seed_node` from another region instead of the one from the `EU` above.
 
-If you want to run on stokenet (testnet) instead of mainnet, you can set `network.id=2`.
+If you want to run on stokenet (testnet) instead of mainnet, you can set `network.id=2` and use this seed node: 
+```
+radix://tn1qt9kqzzqyj27zv4n67f2jrzgd24hsxfwe8d4kw9j4msze7rpdg3guvk07jy@54.76.86.46:30000
+```
 
 For further detail and explanation check out the official documentation
 https://docs.radixdlt.com/main/node/systemd-install-node.html#_configuration

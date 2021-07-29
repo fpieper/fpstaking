@@ -503,7 +503,7 @@ prometheus:
 configs:
 - name: integrations
   scrape_configs:
-    - job_name: radix-fullnode
+    - job_name: radix-mainnet-fullnode
       static_configs:
         - targets: ['localhost:3333']
   remote_write:
@@ -512,12 +512,16 @@ configs:
       username: 123456
       url: https://prometheus-blocks-prod-us-central1.grafana.net/api/prom/push
 ```
-Also set the job name to your current running mode (either `radix-fullnode` or `radix-validator`).
-The switch-mode script replaces `fullnode` with `validator` and vice versa.
-Therefore, any additional prefix like a network identifier is possible like: `radix-mainnet-fullnode`.
-This allows to have two dashboards (one for mainnet and one for stokenet) in the same Grafana Cloud account.
+
+The prefixes like `radix-mainnet` before `fullnode` or `validator` are arbitrary and can be used
+to have two dashboards (one for mainnet and one for stokenet) in the same Grafana Cloud account.
+
 Just set the template variable `job` to `radix-mainnet-validator` in your mainnet dashboard
 and `radix-stokenet-validator` in your stokenet dashboard.
+
+The switch-mode script replaces `fullnode` with `validator` and vice versa.
+Set `job_name` in the config above to e.g. `radix-mainnet-fullnode` if you are running in fullnode mode and
+`radix-mainnet-validator` if you are running as validator.
 
 And restart to activate the new settings:
 ```

@@ -49,7 +49,7 @@ then
     switch_grafana "fullnode" $1
 elif [[ "$1" == "fullnode" ]]
 then
-    if [[ $IS_VALIDATING == true ]]
+    if [[ $IS_VALIDATING == true && "$2" != "force" ]]
     then
       PROPOSALS_COMPLETED=$(get_completed_proposals)
       echo "Wait until node completed proposal to minimise risk of a missed proposal ..."

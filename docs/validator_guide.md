@@ -346,7 +346,7 @@ bind both apis to localhost `127.0.0.1`.
 
 ```
 curl -Lo /etc/radixdlt/node/default.config \
-    https://raw.githubusercontent.com/fpieper/fpstaking/main/docs/config/default.stokenet.validator.config
+    https://raw.githubusercontent.com/fpieper/fpstaking/main/docs/config/default.config
 nano /etc/radixdlt/node/default.config
 ```
 
@@ -354,6 +354,8 @@ Setting `api.archive.enable=true` enables archive mode otherwise the node is run
 Then you may also want to enable the construction endpoint with `api.construction.enable=true`.
 
 You also may want set a `seed_node` from another region instead of the one from the `EU` above.
+
+If you want to run on stokenet (testnet) instead of mainnet, you can set `network.id=2`.
 
 For further detail and explanation check out the official documentation
 https://docs.radixdlt.com/main/node/systemd-install-node.html#_configuration
@@ -491,8 +493,6 @@ The Grafana Agent is basically a stripped down Promotheus which is directly writ
 (Grafana Agent behaves like having a built-in Promotheus). 
 You should now have a working monitoring of your system load pushed to Grafana Cloud.
 
-Hint: the monitoring section is work in progress, because the new metrics API will change things a bit.
-
 ## Extending Grafana Agent Config
 Add the `scrape_configs` configuration to `etc/grafana-agent.yaml`: 
 ```
@@ -513,66 +513,26 @@ configs:
       url: https://prometheus-blocks-prod-us-central1.grafana.net/api/prom/push
 ```
 Also set the job name to your current running mode (either `radix-fullnode` or `radix-validator`).
+The switch-mode script replaces `fullnode` with `validator` and vice versa.
+Therefore, any additional prefix like a network identifier is possible like: `radix-mainnet-fullnode`.
+This allows to have two dashboards (one for mainnet and one for stokenet) in the same Grafana Cloud account.
+Just set the template variable `job` to `radix-mainnet-validator` in your mainnet dashboard
+and `radix-stokenet-validator` in your stokenet dashboard.
 
 And restart to activate the new settings:
 ```
 sudo systemctl restart grafana-agent
 ```
 
+## Radix Dashboard
 
-## Radix Dashboard Template
-
-### Prepared Dashboard
-I did the steps I described below under "build yourself" and created a ready to use template called
-`dashboard.json` https://github.com/fpieper/fpstaking/blob/main/docs/config/dashboard.json.
+I adapted the official `Radix Node Dashboard`
+https://github.com/radixdlt/node-runner/blob/main/monitoring/grafana/provisioning/dashboards/sample-node-dashboard.json
+and modified it a bit for usage in Grafana Cloud (including specific job names for `radix-validator` and `radix-fullnode` for failover).
+You cen get the `dashboard.json` from https://github.com/fpieper/fpstaking/blob/main/docs/config/dashboard.json.
 You only need to replace `<your grafana cloud name>` with your own cloud name
 (two times, since it seems the alerts have problems to process a datasource template variable).
-It is a good idea to replace the values and variables in your JSON and then import the complete JSON into Grafana Cloud.
-
-### Build Yourself
-Or you can start with the official `Radix Node Dashboard`
-https://github.com/radixdlt/node-runner/blob/main/monitoring/grafana/provisioning/dashboards/sample-node-dashboard.json
-and modify it a bit for usage in Grafana Cloud:
-
-Replace all `"datasource": null` and `"datasource": "-- Grafana --"` with `"datasource":  "$datasource"`.
-
-Then modify and extends the variables in `templating`. Change the `instance` variable to `localhost:3333` and
-add the variable `datasource` (you need to lookup the correct datasource name in Grafana Cloud):
-```
-"templating": {
-  "list": [
-    {
-      "description": "If case you are running many nodes, use this var to target a single on",
-      "error": null,
-      "hide": 2,
-      "label": null,
-      "name": "instance",
-      "query": "localhost:3333",
-      "skipUrlSync": false,
-      "type": "constant"
-    },
-    {
-      "description": "Set your datasource",
-      "error": null,
-      "hide": 2,
-      "label": "Data Source",
-      "name": "datasource",
-      "query": "grafanacloud-<your grafana cloud name>-prom",
-      "skipUrlSync": false,
-      "type": "constant"
-    }
-  ]
-},
-```
-
-Checkout `dashboard.json` to see how I added `proposals_made`. 
-
-Afterwards, you can now import your dashboard into Grafana Cloud, and the correct values should show up.
-
-### Limitation
-The dashboard currently does not distinguish between multiple nodes like a validator or full node.
-Therefore, without further modifications only run the `metrics-exporter` on your node which is validating
-(after you switched to `validator` mode).
+It is a good idea to replace the values and variables in your JSON and then import the JSON as dashboard into Grafana Cloud.
 
 ## Alerts
 

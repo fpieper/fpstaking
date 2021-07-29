@@ -615,7 +615,6 @@ Show node information:
 curl -s -d '{"jsonrpc": "2.0", "method": "validation.get_node_info", "params": [], "id": 1}' -H "Content-Type: application/json" -X POST "http://localhost:3333/validation" | jq
 ```
 
-
 Shows `targetStateVersion` (versions are kind of Radix's blocks in Olympia - how many blocks are synced):
 ```
 curl -s -X POST 'http://localhost:3333/system' -d '{"jsonrpc": "2.0", "method": "sync.get_data", "params": [], "id": 1}' | jq ".result.targetStateVersion"
@@ -630,4 +629,14 @@ curl -s -X POST 'http://localhost:3333/system' -d '{"jsonrpc": "2.0", "method": 
 Shows current validator information:
 ```
 curl -s -d '{"jsonrpc": "2.0", "method": "validation.get_node_info", "params": [], "id": 1}' -H "Content-Type: application/json" -X POST "http://localhost:3333/validation" | jq
+```
+
+Get network peers:
+```
+curl -s -d '{"jsonrpc": "2.0", "method": "networking.get_peers", "params": [], "id": 1}' -H "Content-Type: application/json" -X POST "http://localhost:3333/system" | jq
+```
+
+Get network configuration:
+```
+curl -s -d '{"jsonrpc": "2.0", "method": "networking.get_configuration", "params": [], "id": 1}' -H "Content-Type: application/json" -X POST "http://localhost:3333/system" | jq
 ```

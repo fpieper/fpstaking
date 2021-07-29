@@ -318,7 +318,7 @@ Your main and backup node will have the same validator key (node-keystore.ks), b
 Please also checkout this article for further details: https://docs.radixdlt.com/main/node/maintaining-uptime.html.
 
 ### Environment file
-Set java options and the previously used keystore password. I increased the Java heap from 3 GB to 4 GB.
+Set java options and the previously used keystore password.
 ```
 cat > /etc/radixdlt/node/secrets-validator/environment << EOF
 JAVA_OPTS="-server -Xms8g -Xmx8g -XX:+HeapDumpOnOutOfMemoryError -XX:+UseCompressedOops -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=jks -Djava.security.egd=file:/dev/urandom -DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector"

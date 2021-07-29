@@ -29,6 +29,13 @@ Lock root password to disable root login via password
 sudo passwd -l root
 ```
 
+## Hostname
+
+You may want to set a different hostname to make distinguishing between your different nodes easier e.g.:
+```
+sudo hostnamectl set-hostname mainnet-1
+```
+
 ## SSH
 Based on https://withblue.ink/2016/07/15/stop-ssh-brute-force-attempts.html
 

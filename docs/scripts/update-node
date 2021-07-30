@@ -30,6 +30,8 @@ then
     chmod +x "$NODE_RUNNER_FILE" && \
     rm -f "radixnode" && \
     ln -s "/opt/radixdlt/$NODE_RUNNER_FILE" radixnode
+else
+    echo "Radix node-runner already up to date."
 fi
 
 cd /opt/radixdlt/releases || exit
@@ -69,7 +71,7 @@ if [[ $DIR_BIN = $(readlink /etc/radixdlt/node/bin) && \
       $DIR_LIB = $(readlink /etc/radixdlt/node/lib) && \
       "$1" != "force" ]]
 then
-    echo "Already up to date with version"
+    echo "Radix node already up to date."
     exit
 fi
 

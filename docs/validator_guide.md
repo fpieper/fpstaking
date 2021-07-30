@@ -430,7 +430,8 @@ We first get the node's wallet address (`address`) with:
 curl -s -d '{ "jsonrpc": "2.0", "method": "account.get_info", "params": [], "id":1}' -H "Content-Type: application/json" -X POST "http://localhost:3333/account" | jq
 ```
 
-We can also get both the node's wallet address (`owner` - prefixed with `tv`) and the validator address (`address`)
+We can also get both the node's wallet address (`owner` - prefixed with `rv` (mainnet) and `tv` (stokenet))
+and the validator address (`address`)
 ```
 curl -s -d '{"jsonrpc": "2.0", "method": "validation.get_node_info", "params": [], "id": 1}' -H "Content-Type: application/json" -X POST "http://localhost:3333/validation" | jq
 ```
@@ -439,7 +440,7 @@ Then send at least 30 XRD to `wallet address` via your Radix Desktop Wallet.
 
 Register your node (or more specifically your key as validator).
 Think about and adapt every parameter, especially:
-- `validator` - the validator address prefixed with `tv`
+- `validator` - the validator address prefixed with `rv` (mainnet) or `tv` (stokenet)
 - `name`
 - `url`
 - `validatorFee` - specified to up to two decimals of precision. e.g. 1 or 1.75
@@ -453,20 +454,20 @@ curl -s -X POST 'http://localhost:3333/account' -H 'Content-Type: application/js
 "params":
 {"actions": [
 {"type": "RegisterValidator",
-"validator": "tv1qt6354z62uzc870padneek7dxua2fcegcsq4mhmw4jej84kr6t2vzrzsf6w"},
+"validator": "rv1qfxktwkq9amdh678cxfynzt4zeua2tkh8nnrtcjpt7fyl0lmu8r3urllukm"},
 {"type": "UpdateValidatorMetadata",
-"name": "Florian Pieper Staking",
+"name": "🚀Florian Pieper Staking",
 "url": "https://florianpieperstaking.com",
-"validator": "tv1qt6354z62uzc870padneek7dxua2fcegcsq4mhmw4jej84kr6t2vzrzsf6w"},
+"validator": "rv1qfxktwkq9amdh678cxfynzt4zeua2tkh8nnrtcjpt7fyl0lmu8r3urllukm"},
 {"type": "UpdateValidatorFee",
-"validator": "tv1qt6354z62uzc870padneek7dxua2fcegcsq4mhmw4jej84kr6t2vzrzsf6w",
-"validatorFee": 4.3},
+"validator": "rv1qfxktwkq9amdh678cxfynzt4zeua2tkh8nnrtcjpt7fyl0lmu8r3urllukm",
+"validatorFee": 3.4},
 {"type": "UpdateAllowDelegationFlag",
-"validator": "tv1qt6354z62uzc870padneek7dxua2fcegcsq4mhmw4jej84kr6t2vzrzsf6w",
+"validator": "rv1qfxktwkq9amdh678cxfynzt4zeua2tkh8nnrtcjpt7fyl0lmu8r3urllukm",
 "allowDelegation": true},
 {"type": "UpdateValidatorOwnerAddress",
-"validator": "tv1qt6354z62uzc870padneek7dxua2fcegcsq4mhmw4jej84kr6t2vzrzsf6w",
-"owner": "tdx1qspwq3a56n6ua34w4a0660hw9leaqte4m9c7z6y2peqlfw9g65pm2tcljt7dn" }
+"validator": "rv1qfxktwkq9amdh678cxfynzt4zeua2tkh8nnrtcjpt7fyl0lmu8r3urllukm",
+"owner": "rdx1qsp5tf0ykd3dd6l84dgpgrs0fgt9slwnkfc0r39wqa98tc579nns73chn9fzm" }
 ]}, "id": 1}' | jq
 ```
 
@@ -484,10 +485,9 @@ curl -s -X POST 'http://localhost:3333/account' -H 'Content-Type: application/js
 -d '{"jsonrpc": "2.0","method": "account.submit_transaction_single_step",
 "params":
 {"actions": [
-{"type": "UpdateValidatorMetadata",
-"name": "Florian Pieper Staking",
-"url": "https://florianpieperstaking.com",
-"validator": "tv1qt6354z62uzc870padneek7dxua2fcegcsq4mhmw4jej84kr6t2vzrzsf6w"}
+{"type": "UpdateValidatorFee",
+"validator": "rv1qfxktwkq9amdh678cxfynzt4zeua2tkh8nnrtcjpt7fyl0lmu8r3urllukm",
+"validatorFee": 3.4}
 ]}, "id": 1}' | jq
 ```
 

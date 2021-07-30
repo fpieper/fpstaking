@@ -14,19 +14,37 @@ get_completed_proposals () {
    | jq ".result.validators[] | select(.address == \"$VALIDATOR_ADDRESS\") | .proposalsCompleted"
 }
 
+cd /opt/radixdlt || exit
+
+echo "Checking for latest radix node-runner version ..."
+NODE_RUNNER_URL=$(curl -s https://api.github.com/repos/radixdlt/node-runner/releases/latest | \
+           jq -r '.assets[] | select(.browser_download_url|split("/")|last|test("^radixnode-ubuntu-20.04")) | .browser_download_url')
+echo "Found node-runner url:" "$NODE_RUNNER_URL"
+NODE_RUNNER_FILE="$(basename "$NODE_RUNNER_URL")-$(echo "$NODE_RUNNER_URL" | awk -F/ '{print $(NF-1)}')"
+echo "Latest node-runner version: " "$NODE_RUNNER_FILE"
+
+if [[ ! -f $NODE_RUNNER_FILE ]]
+then
+    echo "Downloading new node-runner version ..."
+    curl -Lo "$NODE_RUNNER_FILE" "$NODE_RUNNER_URL" && \
+    chmod +x "$NODE_RUNNER_FILE" && \
+    rm -f "radixnode" && \
+    ln -s "/opt/radixdlt/$NODE_RUNNER_FILE" radixnode
+fi
+
+cd /opt/radixdlt/releases || exit
+
 echo "Checking for latest radix node version ..."
 NODE_URL=$(curl -s https://api.github.com/repos/radixdlt/radixdlt/releases/latest | \
            jq -r '.assets[] | select(.browser_download_url|split("/")|last|test("^radixdlt-dist-[0-9.]*zip")) | .browser_download_url')
-echo "Found url:" "$NODE_URL"
+echo "Found radix node url:" "$NODE_URL"
 NODE_ARCHIVE=$(basename "$NODE_URL")
 
 echo "Latest node version:" "$NODE_ARCHIVE"
 
-cd /opt/radixdlt/releases || exit
-
 if [[ ! -f $NODE_ARCHIVE ]]
 then
-    echo "Downloading new version ..."
+    echo "Downloading new node version ..."
     curl -OL "$NODE_URL" && \
     unzip "$NODE_ARCHIVE"
 fi

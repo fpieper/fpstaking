@@ -219,7 +219,7 @@ sudo useradd radixdlt -m -s /bin/bash
 ## Service Control
 Allow radix user to control the radix node service.
 ```
-sudo sh -c ' cat > /etc/sudoers.d/radixdlt << EOF
+sudo sh -c 'cat > /etc/sudoers.d/radixdlt << EOF
 radixdlt ALL= NOPASSWD: /bin/systemctl enable radixdlt-node.service
 radixdlt ALL= NOPASSWD: /bin/systemctl restart radixdlt-node.service
 radixdlt ALL= NOPASSWD: /bin/systemctl stop radixdlt-node.service
@@ -260,7 +260,7 @@ sudo chown -R radixdlt:radixdlt /opt/radixdlt
 
 Add `/opt/radixdlt` to `PATH`:
 ```
-sudo sh -c ' cat > /etc/profile.d/radixdlt.sh << EOF
+sudo sh -c 'cat > /etc/profile.d/radixdlt.sh << EOF
 PATH=$PATH:/opt/radixdlt
 EOF'
 ```

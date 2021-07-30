@@ -258,6 +258,13 @@ sudo mkdir -p /opt/radixdlt/releases
 sudo chown -R radixdlt:radixdlt /opt/radixdlt
 ```
 
+Add `/opt/radixdlt` to `PATH`:
+```
+sudo sh -c ' cat > /etc/profile.d/radixdlt.sh << EOF
+PATH=$PATH:/opt/radixdlt
+EOF'
+```
+
 ## Install Node
 Switch to radixdlt user first
 ```
@@ -269,19 +276,19 @@ from `https://github.com/radixdlt/radixdlt/releases` and waits until one proposa
 restart the node to minimise the downtime.
 If the interval between proposals is higher than around 5 seconds then there will be zero missed proposals:
 ```
-curl -Lo /opt/radixdlt/update-node.sh \
-    https://raw.githubusercontent.com/fpieper/fpstaking/main/docs/scripts/update-node.sh && \
-chmod +x /opt/radixdlt/update-node.sh
+curl -Lo /opt/radixdlt/update-node \
+    https://raw.githubusercontent.com/fpieper/fpstaking/main/docs/scripts/update-node && \
+chmod +x /opt/radixdlt/update-node
 ```
 
 Installs or updates the radix node with the latest available version.
 ```
-/opt/radixdlt/update-node.sh
+update-node
 ```
 
 The argument `force` bypasses the check of the current installed version (mostly useful for testing). 
 ```
-/opt/radixdlt/update-node.sh force
+update-node force
 ```
 
 Change directory for following steps.
@@ -391,28 +398,27 @@ to the corresponding directory. For example to run in validator mode:
 /etc/radixdlt/node/secrets -> /etc/radixdlt/node/secrets-validator 
 ```
 
-To streamline this process of promoting in case of a failover from our primary node, I wrote a small script.
-Create the file `/etc/radixdlt/node/switch-mode.sh` (and set permissions) 
+To streamline this process of promoting in case of a failover from our primary node, I wrote a small script:
 ```
-curl -Lo /opt/radixdlt/switch-mode.sh \
-    https://raw.githubusercontent.com/fpieper/fpstaking/main/docs/scripts/switch-mode.sh && \
-chmod +x /opt/radixdlt/switch-mode.sh
+curl -Lo /opt/radixdlt/switch-mode \
+    https://raw.githubusercontent.com/fpieper/fpstaking/main/docs/scripts/switch-mode && \
+chmod +x /opt/radixdlt/switch-mode
 ```
 
 To switch the mode simply pass the mode as first argument. Possible modes are: `validator` and `fullnode`
 ```
-/opt/radixdlt/switch-mode.sh <mode>
+switch-mode <mode>
 ```
 
 For example:
 ```
-/opt/radixdlt/switch-mode.sh validator
-/opt/radixdlt/switch-mode.sh fullnode
+switch-mode validator
+switch-mode fullnode
 ```
 
 It also supports `force` in case you need to switch, but your validator isn't fully working or making proposals:
 ```
-/opt/radixdlt/switch-mode.sh fullnode force
+switch-mode fullnode force
 ```
 
 For bootstrapping a new validator it is a good idea to start as a `fullnode` and then after full sync

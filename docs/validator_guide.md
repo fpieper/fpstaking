@@ -432,6 +432,24 @@ For maintenance failover just open SSH connections to both of your servers side-
 2. Wait until switching mode was successful
 3. Immediately switch to validator mode on your backup node: `/opt/radixdlt/switch-mode.sh validator`
 
+## Node-Runner CLI
+
+The node-runner cli was already installed by the `update-node` script.
+We only just need to fit the following environment variables to our setup: 
+```
+echo '
+export NGINX_SUPERADMIN_PASSWORD=""
+export NGINX_ADMIN_PASSWORD=""
+export NGINX_METRICS_PASSWORD=""
+export NODE_END_POINT="http://localhost:3333"' >> ~/.bashrc
+```
+
+The radix node-runner cli can now be called with for example:
+```
+radixnode api health
+```
+
+
 ## Registering as a validator
 This is based on the official documentation https://docs.radixdlt.com/main/node/systemd-register-as-validator.html.
 Please take a look for further details, I mainly added it here because our endpoints are slightly different.

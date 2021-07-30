@@ -410,6 +410,11 @@ For example:
 /opt/radixdlt/switch-mode.sh fullnode
 ```
 
+It also supports `force` in case you need to switch, but your validator isn't fully working or making proposals:
+```
+/opt/radixdlt/switch-mode.sh fullnode force
+```
+
 For bootstrapping a new validator it is a good idea to start as a `fullnode` and then after full sync
 switch to `validator` mode because this also directly tests failover or promoting to validator works fine.
 

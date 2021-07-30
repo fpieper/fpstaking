@@ -449,6 +449,11 @@ The radix node-runner cli can now be called with for example:
 radixnode api health
 ```
 
+For further details checkout the official documentation https://github.com/radixdlt/node-runner.
+Though only use the `api` feature of the cli to interact with the node endpoints in 
+an easier way and not the `setup`/`update`/`nginx`/`monitoring` commands, since these
+conflict with the minimal setup approach in this guide.
+
 
 ## Registering as a validator
 This is based on the official documentation https://docs.radixdlt.com/main/node/systemd-register-as-validator.html.

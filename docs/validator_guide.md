@@ -578,7 +578,8 @@ I adapted the official `Radix Node Dashboard`
 https://github.com/radixdlt/node-runner/blob/main/monitoring/grafana/provisioning/dashboards/sample-node-dashboard.json
 and modified it a bit for usage in Grafana Cloud (including specific job names for `radix-validator` and `radix-fullnode` for failover).
 You can get the `dashboard.json` from https://github.com/fpieper/fpstaking/blob/main/docs/config/dashboard.json.
-You only need to replace `<your grafana cloud name>` with your own cloud name.
+You only need to replace `<your grafana cloud name>` with your own cloud name
+(two times, since it seems the alerts have problems to process a datasource template variable).
 It is a good idea to replace the values and variables in your JSON and then import the JSON as dashboard into Grafana Cloud.
 
 ## Alerts

@@ -1454,7 +1454,7 @@
         "noDataState": "alerting",
         "notifications": []
       },
-      "datasource": "$datasource",
+      "datasource": "grafanacloud-<your grafana cloud name>-prom",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1642,14 +1642,31 @@
         "type": "constant"
       },
       {
-        "description": "If case you are running many nodes, use this var to target a single on",
+        "allValue": null,
+        "current": {
+          "selected": true,
+          "text": "radix-mainnet-validator",
+          "value": "radix-mainnet-validator"
+        },
+        "datasource": "grafanacloud-fpieper-prom",
+        "definition": "label_values(job)",
+        "description": "Allows you to monitor different radix nodes in even different networks.",
         "error": null,
-        "hide": 2,
-        "label": null,
+        "hide": 0,
+        "includeAll": false,
+        "label": "Radix Node",
+        "multi": false,
         "name": "job",
-        "query": "radix-mainnet-validator",
+        "options": [],
+        "query": {
+          "query": "label_values(job)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "/radix.*/",
         "skipUrlSync": false,
-        "type": "constant"
+        "sort": 0,
+        "type": "query"
       },
       {
         "description": "Set your datasource",

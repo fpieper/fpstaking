@@ -1648,7 +1648,7 @@
           "text": "radix-mainnet-validator",
           "value": "radix-mainnet-validator"
         },
-        "datasource": "grafanacloud-fpieper-prom",
+        "datasource": "grafanacloud-<your grafana cloud name>-prom",
         "definition": "label_values(job)",
         "description": "Allows you to monitor different radix nodes in even different networks.",
         "error": null,

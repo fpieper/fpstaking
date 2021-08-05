@@ -177,7 +177,7 @@ viewBenefits device model =
                         }
                     , text " to help other node-runners configuring their validator in a secure way."
                     ]
-                , viewBenefit device security "Secure" [ text "The validator and failover node are both hardened with best security practices to minimise attack vectors. Both are protected against DDOS attacks." ]
+                , viewBenefit device security "Secure" [ text "The validator and failover node are hardened with best security practices to minimise attack vectors and are protected against DDOS attacks." ]
                 , viewBenefit device face "Transparent" [ text "Since I stumbled across Radix I had a lot of fun researching possible competitors and therefore am quite active and known in the community." ]
                 ]
         ]

@@ -205,7 +205,7 @@ https://docs.radixdlt.com/main/node/systemd-install-node.html.
 ## Dependencies
 Install the necessary dependencies and initiate randomness to securely generate keys.
 ```
-sudo apt install -y rng-tools openjdk-11-jdk unzip wget jq
+sudo apt install -y rng-tools openjdk-11-jdk unzip jq curl
 sudo rngd -r /dev/random
 ```
 

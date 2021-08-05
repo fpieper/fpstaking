@@ -444,7 +444,9 @@ export NGINX_METRICS_PASSWORD=""
 export NODE_END_POINT="http://localhost:3333"' >> ~/.bashrc
 ```
 
-The radix node-runner cli can now be called with for example:
+Now you need to logout and login back into the shell to enable the environment variables.
+
+The radix node-runner cli can afterwards be called with for example:
 ```
 radixnode api health
 ```

@@ -1,0 +1,35 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&family=Roboto+Mono:wght@100;200;300;400;500;600;700&family=Source+Code+Pro:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="/main.js"></script>
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link href="styles.css" rel="stylesheet">
+  <style>
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+  </style>
+</head>
+<body>
+  <div id="elm"></div>
+  <script>
+    var app = Elm.Main.init({
+      node: document.getElementById('elm'),
+      flags: {
+          width: window.innerWidth,
+          height: window.innerHeight
+      }
+    });
+    app.ports.setMetaDescription.subscribe(function(description) {
+      document.querySelector('meta[name="description"]').setAttribute("content", description);
+    });
+  </script>
+</body>
+</html>

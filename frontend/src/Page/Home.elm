@@ -9,7 +9,7 @@ import Element.Input as Input exposing (thumb)
 import Html.Attributes
 import Material.Icons.Outlined exposing (build, cloud_off, face, favorite, language, notifications_active, paid, security)
 import Palette exposing (..)
-import UI exposing (Icon, heading, icon, inputHint, subHeading, viewFactTable)
+import UI exposing (Icon, heading, icon, inputHint, subHeading, viewContact, viewFactTable, viewFooter)
 import Utils exposing (bigIntDivToFloat, bigIntMulFloat, formatWithDecimals, safeBigInt)
 
 
@@ -386,23 +386,6 @@ viewUptime model =
         ]
 
 
-viewContact : Model -> Element Msg
-viewContact model =
-    row [ centerX ]
-        [ newTabLink [ centerX ]
-            { url = "https://t.me/florianpieperstaking"
-            , label =
-                image
-                    [ width <| px large
-                    , mouseOver
-                        [ alpha 0.9
-                        ]
-                    ]
-                    { src = "images/Telegram_2019_simple_logo.svg", description = "Telegram logo" }
-            }
-        ]
-
-
 viewValidatorAddress : Element Msg
 viewValidatorAddress =
     column [ centerX, spacing normal ]
@@ -424,18 +407,6 @@ viewValidatorAddress =
         ]
 
 
-viewFooter : Model -> Element Msg
-viewFooter model =
-    column
-        [ centerX
-        , paddingEach { top = 0, bottom = xLarge, left = normal, right = normal }
-        , spacing small
-        ]
-        [ paragraph [ Font.center ] [ text "Radix Staking powered by Florian Pieper Staking" ]
-        , el [ centerX ] <| text "2021"
-        ]
-
-
 view : Device -> Model -> Element Msg
 view device model =
     column [ width fill, spacing xLarge, Font.color darkShades, paddingXY 0 0 ]
@@ -444,6 +415,6 @@ view device model =
         , viewValidatorAddress
         , viewStakingCalculator device model
         , viewUptime model
-        , viewContact model
-        , viewFooter model
+        , viewContact
+        , viewFooter
         ]

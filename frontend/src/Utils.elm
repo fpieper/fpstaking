@@ -57,3 +57,8 @@ bigIntDivToFloat a b =
         |> Maybe.withDefault 0
     )
         / 1000000000000
+
+
+bigIntSum : List BigInt -> BigInt
+bigIntSum numbers =
+    List.foldl (\fee acc -> BigInt.add fee acc) (BigInt.fromInt 0) numbers

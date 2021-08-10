@@ -7,10 +7,11 @@ import Element exposing (..)
 import Element.Background as Background
 import Element.Font as Font
 import Page.Home
+import Page.Validators
 import Palette exposing (..)
 import Ports
 import Url exposing (Url)
-import Url.Parser as Parser exposing ((</>), oneOf, parse, top)
+import Url.Parser as Parser exposing ((</>), oneOf, parse, s, top)
 
 
 
@@ -44,6 +45,7 @@ type alias Model =
 type PageModel
     = NoPage
     | PageHome Page.Home.Model
+    | PageValidators Page.Validators.Model
 
 
 type alias Flags =
@@ -84,6 +86,11 @@ initHome =
     initPage Page.Home.init PageHome HomeMsg
 
 
+initValidators : ( PageModel, Cmd Msg )
+initValidators =
+    initPage Page.Validators.init PageValidators ValidatorsMsg
+
+
 initByUrl : Url -> ( PageModel, Cmd Msg )
 initByUrl url =
     let
@@ -97,6 +104,9 @@ initByUrl url =
         Just RouteHome ->
             initHome
 
+        Just RouteValidators ->
+            initValidators
+
 
 
 -- UPDATE
@@ -107,6 +117,7 @@ type Msg
     | UrlChanged Url.Url
     | DeviceClassified Device
     | HomeMsg Page.Home.Msg
+    | ValidatorsMsg Page.Validators.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -136,6 +147,10 @@ update msg model =
             Page.Home.update subMsg subModel
                 |> updatePage HomeMsg PageHome model
 
+        ( ValidatorsMsg subMsg, PageValidators subModel ) ->
+            Page.Validators.update subMsg subModel
+                |> updatePage ValidatorsMsg PageValidators model
+
         _ ->
             ( model, Cmd.none )
 
@@ -156,12 +171,14 @@ updatePage msgConstructor modelConstructor model ( subModel, subMsg ) =
 
 type Route
     = RouteHome
+    | RouteValidators
 
 
 routeParser : Parser.Parser (Route -> a) a
 routeParser =
     oneOf
         [ Parser.map RouteHome top
+        , Parser.map RouteValidators (s "validators")
         ]
 
 
@@ -189,6 +206,9 @@ viewPage device page =
 
         PageHome subModel ->
             Element.map HomeMsg <| Page.Home.view device subModel
+
+        PageValidators subModel ->
+            Element.map ValidatorsMsg <| Page.Validators.view device subModel
 
 
 

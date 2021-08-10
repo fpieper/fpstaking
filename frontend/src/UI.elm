@@ -62,3 +62,32 @@ viewFactTable tableStyles cellStyles data =
               }
             ]
         }
+
+
+viewContact : Element msg
+viewContact =
+    row [ centerX ]
+        [ newTabLink [ centerX ]
+            { url = "https://t.me/florianpieperstaking"
+            , label =
+                image
+                    [ width <| px large
+                    , mouseOver
+                        [ alpha 0.9
+                        ]
+                    ]
+                    { src = "images/Telegram_2019_simple_logo.svg", description = "Telegram logo" }
+            }
+        ]
+
+
+viewFooter : Element msg
+viewFooter =
+    column
+        [ centerX
+        , paddingEach { top = 0, bottom = xLarge, left = normal, right = normal }
+        , spacing small
+        ]
+        [ paragraph [ Font.center ] [ text "Radix Staking powered by Florian Pieper Staking" ]
+        , el [ centerX ] <| text "2021"
+        ]

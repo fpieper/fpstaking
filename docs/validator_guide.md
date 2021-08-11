@@ -310,7 +310,7 @@ The idea is to have two folders with configurations for a validator and a fullno
 We will later to be able to switch between being a validator or fullnode.
 This is useful for failover scenarios.
 
-Either copy your already existing keyfiles `validator.ks` to `/etc/radixdlt/node/secrets-validator` or `/etc/radixdlt/node/secrets-fullnode` or create a new keys.
+Either copy your already existing keyfiles `node-keystore.ks` to `/etc/radixdlt/node/secrets-validator` or `/etc/radixdlt/node/secrets-fullnode` or create a new keys.
 Use a password generator of your choice to generate a secure password, don't use your regular one because
 it will be written in plain text on disk and loaded as environment variable.
 ```

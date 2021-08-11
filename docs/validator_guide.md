@@ -461,7 +461,12 @@ conflict with the minimal setup approach in this guide.
 This is based on the official documentation https://docs.radixdlt.com/main/node/systemd-register-as-validator.html.
 Please take a look for further details, I mainly added it here because our endpoints are slightly different.
 
-We first get the node's wallet address (`address`) with:
+First of all we make sure that our node is running in `validator mode` to register the correct node key.
+```
+switch-mode validator
+```
+
+Then we get the node's wallet address (`address`) with:
 ```
 curl -s -d '{ "jsonrpc": "2.0", "method": "account.get_info", "params": [], "id":1}' -H "Content-Type: application/json" -X POST "http://localhost:3333/account" | jq
 ```

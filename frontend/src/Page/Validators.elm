@@ -109,10 +109,11 @@ addGroups validators =
                 [ "rv1qgaftlzpdxaacv3jmf0x9vlys3ap0mngfea8gsedph4ckaya0gqe6h9mv6f"
                 , "rv1qf53n265drur37lkqcun5sa8j0h0aqpvpuxh3r2nz7xzdskvwcy9zkpyh42"
                 ]
-            , buildGroup "🔗 Radixnode.io"
+
+            {--, buildGroup "🔗 Radixnode.io"
                 [ "rv1qwqvrexkz0qdgve9jxk4c8s35n9n4wucgm0m8pahgqyc2py6raf7g9uf9j7"
                 , "rv1q0lskvu7awu4rgzju3pth6a7eqk3zazrnlqnxwqtehr7td4he2zfck5yruz"
-                ]
+                ]--}
             , buildGroup "RadixPool"
                 [ "rv1q04u5zwtgffsqkvr08xqm6vpm3gwxh4uqwtjpx5p47ew0m0v8m5zs3m3jed"
                 , "rv1q27pjz9zf4f37df493xzx6hgattjj6qdyn255u8a58eeyac7lg495xklqu7"
@@ -127,6 +128,32 @@ addGroups validators =
                 [ "rv1q0v80rfgsldx3zksfzurumdf5g3us8xa9sykf3fdevtrr557lgrmjv2cft5"
                 , "rv1qdxg4r7ulqustdus02k8egkenfwknlvxs4hm2ynemp5knzykgwh2xfa53at"
                 , "rv1qwsg60y9h6c0t0n93z70053jseygtd8n6ueg3tr7wn8krxv60fexcsnh0zq"
+                ]
+            , buildGroup "RadixFoundation"
+                [ "rv1qgxn3eeldj33kd98ha6wkjgk4k77z6xm0dv7mwnrkefknjcqsvhuu30c6hh"
+                , "rv1qwrrnhzfu99fg3yqgk3ut9vev2pdssv7hxhff80msjmmcj968487uc0c0nc"
+                , "rv1qf2x63qx4jdaxj83kkw2yytehvvmu6r2xll5gcp6c9rancmrfsgfwttnczx"
+                , "rv1qt2zy2cuf3ssx25zspkzg29qzlwf3tcdhud3908y8x5veytgv4ykwh9w0ty"
+                , "rv1q0zdrxc7u6e296yjptd4yqdl3m9g5nk4zk97ta46rt2fuye05y38vcqdxul"
+                , "rv1q0gnmwv0fmcp7ecq0znff7yzrt7ggwrp47sa9pssgyvrnl75tvxmvke8uxe"
+                , "rv1q29j87g5s05vf8l7ele9543r6n4sda0kj548jnncx6jqscrl40vw6m3s805"
+                , "rv1qt3t0tezvfqdyjzkyepmjh3rvp5mu3lfa824rq6kl3j2xlh9ptkq504xyuq"
+                , "rv1qfhdl4zcu3tntaa9dpa4gmndcggrw9a97ee485sswstzxx9w7qsrqvp8j2n"
+                , "rv1q0fnnp2ncmtkyyz4fz6q69x3hpnu95r8jndzh6zyxh0kr98v8t5fw6w4gj3"
+                , "rv1qgzea7fs4f9jxj3s55uw98tsvujzef6uuwjxptea4zya2yywkgcm2m772ts"
+                , "rv1q25v040ejdlwxy5lu4688la66w8l0kqh383psyaadqp58jmsz75wgqgk0j3"
+                , "rv1q0c0frnkguvsynghlw84f82nfh82mpr6d2fxamlcn4pcpz8zsgcrcquhlk3"
+                , "rv1qt22v09sl9ptdujtz8tz3g3dc4m93439jyq6jf2jwf5ea668r2ycvyuv7z5"
+                , "rv1q0k9hxla6phcamc7laxa0juawg9t9vtspx6ux2s0nal07x8uk5ylzye7lhd"
+                , "rv1qwxf0ytqa8damm3vr2jgq04nejev043xy509q0vkrhdhchs7n79fvewxsvv"
+                , "rv1qfyk8r20jpwxjmzkvkkxu247vmffr4dl3vkqj9gsmcpp5f6mxpgxcscwj6m"
+                , "rv1qgvahu9vl6fslx8m6stdherjkvztqxm60fhmctjl0ueqfhledd5ds8pnyty"
+                , "rv1qdakpg9s90sha6z9q7rug43ucdyc82aqw6hlxcfr2t8rrse589se26mf90m"
+                , "rv1qwp64k6s05kcl0c86cumezyeh4twzy7eduwz4enf35udhfhfvelkseawyu2"
+                , "rv1qft2plmngnkn6f2xp2zcl944twzyylh4s50aa2q2n6wh37gnqtfwyz9as5w"
+                , "rv1qdpavrvzvrsljlh7u7mxg3zqszcya9yrpxk9d77grhtm4cxgwhlh69a2hkm"
+                , "rv1qgdue83wgezwrdsn2ngqnqpa74euykulngsqxernzkzcspkpula4kle75q6"
+                , "rv1qgcw6z26qr3mslfjkz82s7qtmgqnugq9amsnl8jwqzxhtrax4mqk7qsl6vu"
                 ]
             ]
 
@@ -354,26 +381,39 @@ nodeRunnerStake validator =
 
 shortAddress : String -> String
 shortAddress address =
-    String.left 4 address
+    String.left 2 address
         ++ "…"
-        ++ String.right 5 address
+        ++ String.right 7 address
 
 
-viewValidators : Device -> List Validator -> Color -> Element Msg
-viewValidators device validators zoneColor =
+type SortOrder
+    = Ascending
+    | Descending
+
+
+viewValidators : Device -> List Validator -> Color -> SortOrder -> Element Msg
+viewValidators device validators zoneColor sortOrder =
     let
         sortedValidators =
             List.sortWith
                 (\a b ->
                     case BigInt.compare (nodeRunnerStake a) (nodeRunnerStake b) of
                         LT ->
-                            GT
+                            if sortOrder == Ascending then
+                                LT
+
+                            else
+                                GT
 
                         EQ ->
                             EQ
 
                         GT ->
-                            LT
+                            if sortOrder == Ascending then
+                                GT
+
+                            else
+                                LT
                 )
                 validators
 
@@ -439,7 +479,7 @@ viewValidators device validators zoneColor =
                                 , label = text trimmedName
                                 }
               }
-            , { header = headerCell [ Font.alignRight ] <| text "Node Runner Stake"
+            , { header = headerCell [ Font.alignRight ] <| text "Combined Operator Stake"
               , width = shrink
               , view =
                     \index validator ->
@@ -456,7 +496,7 @@ viewValidators device validators zoneColor =
                     \index validator ->
                         case validator.group of
                             Nothing ->
-                                el [ cellPadding, Font.alignRight, centerX, centerY ] <| text "= node runner"
+                                el [ cellPadding, Font.alignRight, centerX, centerY ] <| text "= combined"
 
                             Just group ->
                                 stakeCell validator.totalDelegatedStake validator.stakeShare
@@ -476,6 +516,15 @@ viewValidators device validators zoneColor =
                             text <|
                                 formatStake validator.ownerDelegation
               }
+            , { header = headerCell [ Font.alignRight ] <| text "Uptime"
+              , width = shrink
+              , view =
+                    \index validator ->
+                        el [ cellPadding, Font.alignRight, centerX, centerY ] <|
+                            text <|
+                                formatWithDecimals 1 validator.uptimePercentage
+                                    ++ "%"
+              }
             , { header = headerCell [ Font.alignRight ] <| text "Fee"
               , width = shrink
               , view =
@@ -485,15 +534,15 @@ viewValidators device validators zoneColor =
                                 formatWithDecimals 2 validator.fee
                                     ++ "%"
               }
-            , { header = headerCell [ Font.alignRight ] <| text "Uptime"
+
+            {--, { header = headerCell [ Font.alignRight ] <| text "Yearly Operator Income"
               , width = shrink
               , view =
                     \index validator ->
                         el [ cellPadding, Font.alignRight, centerX, centerY ] <|
                             text <|
-                                formatWithDecimals 2 validator.uptimePercentage
-                                    ++ "%"
-              }
+                                FormatNumber.format { usLocale | decimals = Exact 0 } (validator.stakeShare * validator.fee * 100 * 30000)
+              }--}
             , { header = headerCell [] <| text "Address"
               , width = shrink
               , view =
@@ -539,8 +588,8 @@ headingWithIcon icon_ label_ color_ =
         ]
 
 
-viewValidatorZone : Device -> (Int -> Coloring -> Html Msg) -> String -> Color -> String -> List Validator -> List String -> Element Msg
-viewValidatorZone device icon_ headingLabel color_ emptyMessage validators description =
+viewValidatorZone : Device -> (Int -> Coloring -> Html Msg) -> String -> Color -> String -> List Validator -> List String -> SortOrder -> Element Msg
+viewValidatorZone device icon_ headingLabel color_ emptyMessage validators description sortOrder =
     column [ width fill, spacing normal ]
         [ headingWithIcon icon_ headingLabel color_
         , column [ spacing normal, centerX ] <| List.map (\t -> paragraph [ spacing small, centerX, width <| maximum 800 fill, Font.center ] [ text t ]) description
@@ -548,7 +597,7 @@ viewValidatorZone device icon_ headingLabel color_ emptyMessage validators descr
             text emptyMessage
 
           else
-            viewValidators device validators color_
+            viewValidators device validators color_ sortOrder
         ]
 
 
@@ -573,60 +622,18 @@ viewValidatorZones device model =
                     List.filter (\v -> v.rank > 100) validators
             in
             column [ width fill, spacing xLarge ]
-                [ el [ centerX ] <| text <| "Total Stake: " ++ formatStake model.totalStake
+                [ el [ centerX ] <| text <| "Total Stake: " ++ formatStake model.totalStake ++ " XRD"
                 , column [ width fill, spacing large ]
                     [ let
-                        dangerValidators =
-                            List.filter
-                                (\validator ->
-                                    case validator.group of
-                                        Just group ->
-                                            group.stakeShare >= 0.05
-
-                                        Nothing ->
-                                            validator.stakeShare >= 0.05
-                                )
-                                top100validators
-                      in
-                      viewValidatorZone device
-                        sentiment_very_dissatisfied
-                        "DANGER ZONE"
-                        crimson
-                        "No validators in danger zone currently."
-                        dangerValidators
-                        [ "The validators in the danger zone have way too much stake and stakers should not select them to increase network security."
-                        , "Be warned: Your cat will die otherwise."
-                        ]
-                    , let
-                        warningValidators =
-                            List.filter
-                                (\validator ->
-                                    case validator.group of
-                                        Just group ->
-                                            0.03 <= group.stakeShare && group.stakeShare < 0.05
-
-                                        Nothing ->
-                                            0.03 <= validator.stakeShare && validator.stakeShare < 0.05
-                                )
-                                top100validators
-                      in
-                      viewValidatorZone device
-                        sentiment_neutral
-                        "WARNING ZONE"
-                        portlandOrange
-                        "No validators in warning zone currently."
-                        warningValidators
-                        [ "The validators in the warning zone still have a lot of stake. Maybe better pick another validator of the safe zone." ]
-                    , let
                         safeValidators =
                             List.filter
                                 (\validator ->
                                     case validator.group of
                                         Just group ->
-                                            group.stakeShare < 0.03
+                                            group.stakeShare < 0.02
 
                                         Nothing ->
-                                            validator.stakeShare < 0.03
+                                            validator.stakeShare < 0.02
                                 )
                                 top100validators
                       in
@@ -636,7 +643,52 @@ viewValidatorZones device model =
                         malachite
                         "No validators in safe zone currently."
                         safeValidators
-                        [ "The validators in the safe zone do not have more than 3% of combined node runner stake and therefore are good candidates for increasing network decentralisation." ]
+                        [ "The validators in the safe zone do not have more than 2% of combined node operator stake and therefore are good candidates for increasing network decentralisation and security." ]
+                        Ascending
+                    , let
+                        warningValidators =
+                            List.filter
+                                (\validator ->
+                                    case validator.group of
+                                        Just group ->
+                                            0.02 <= group.stakeShare && group.stakeShare < 0.03
+
+                                        Nothing ->
+                                            0.02 <= validator.stakeShare && validator.stakeShare < 0.03
+                                )
+                                top100validators
+                      in
+                      viewValidatorZone device
+                        sentiment_neutral
+                        "WARNING ZONE"
+                        portlandOrange
+                        "No validators in warning zone currently."
+                        warningValidators
+                        [ "The validators in the warning zone have quite some stake. Maybe better pick another validator of the safe zone." ]
+                        Ascending
+                    , let
+                        dangerValidators =
+                            List.filter
+                                (\validator ->
+                                    case validator.group of
+                                        Just group ->
+                                            group.stakeShare >= 0.03
+
+                                        Nothing ->
+                                            validator.stakeShare >= 0.03
+                                )
+                                top100validators
+                      in
+                      viewValidatorZone device
+                        sentiment_very_dissatisfied
+                        "DANGER ZONE"
+                        crimson
+                        "No validators in danger zone currently."
+                        dangerValidators
+                        [ "The validators in the danger zone have too much stake and stakers should not select them to increase network security."
+                        , "Be warned: Your cat will die otherwise."
+                        ]
+                        Ascending
                     , viewValidatorZone device
                         sentiment_neutral
                         "NOT IN NEXT EPOCH"
@@ -644,6 +696,7 @@ viewValidatorZones device model =
                         "No validators out of top 100 currently."
                         beyond100validators
                         [ "The following validators will be not be selected for the next epoch. You will not earn rewards in this case." ]
+                        Descending
                     ]
                 ]
 

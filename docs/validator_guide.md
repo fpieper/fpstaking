@@ -197,7 +197,6 @@ sudo mount -a
 sudo reboot
 ```
 
-
 # Radix Node
 We install the Radix node based on the standalone instructions form the documentation
 https://docs.radixdlt.com/main/node/systemd-install-node.html. 
@@ -240,15 +239,20 @@ EOF'
 ```
 
 
-## Create System Service file and directories
-We create the systemd service and set the correct ownership
-(we do that now because the radixdlt user does not have the permissions):
+## Systemd Service
+Create the radixdlt-node service:
 ```
-sudo touch /etc/systemd/system/radixdlt-node.service
-sudo chown radixdlt:radixdlt /etc/systemd/system/radixdlt-node.service
-````
+sudo curl -Lo /etc/systemd/system/radixdlt-node.service \
+    https://raw.githubusercontent.com/fpieper/fpstaking/main/docs/config/radixdlt-node.service
+```
 
-Also we create the necessary directories and set the ownership:
+Also we enable the service at boot:
+```
+sudo systemctl enable radixdlt-node
+```
+
+## Create config and data directories
+We create the necessary directories and set the ownership:
 ```
 sudo mkdir /etc/radixdlt/
 sudo chown radixdlt:radixdlt -R /etc/radixdlt
@@ -377,17 +381,6 @@ radix://tn1qt9kqzzqyj27zv4n67f2jrzgd24hsxfwe8d4kw9j4msze7rpdg3guvk07jy@54.76.86.
 For further detail and explanation check out the official documentation
 https://docs.radixdlt.com/main/node/systemd-install-node.html#_configuration
 
-## Systemd Service
-Create the radixdlt-node service with the following config.
-```
-curl -Lo /etc/systemd/system/radixdlt-node.service \
-    https://raw.githubusercontent.com/fpieper/fpstaking/main/docs/config/radixdlt-node.service
-```
-
-Also we enable the service at boot:
-```
-sudo systemctl enable radixdlt-node
-```
 
 ## Failover
 

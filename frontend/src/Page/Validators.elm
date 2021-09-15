@@ -780,8 +780,7 @@ viewValidatorZones device model =
 
         Failure err ->
             paragraph []
-                [ text <| Debug.toString err
-                , text "Error loading validators!"
+                [ text "Error loading validators!"
                 ]
 
         NotAsked ->

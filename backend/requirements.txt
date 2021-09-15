@@ -1,0 +1,4 @@
+fastapi
+fastapi-utils
+uvicorn[standard]
+aiohttp[speedups]

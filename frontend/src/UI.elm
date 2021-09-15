@@ -1,8 +1,11 @@
 module UI exposing (..)
 
+import Color as ElmColor
 import Element exposing (..)
 import Element.Background as Background
+import Element.Border as Border
 import Element.Font as Font
+import Element.Input as Input
 import Html
 import Material.Icons.Types exposing (Coloring(..))
 import Palette exposing (..)
@@ -21,6 +24,28 @@ icon size name =
     Element.html (name size Inherit)
 
 
+
+-- COLORS
+
+
+toUiColor : ElmColor.Color -> Color
+toUiColor color =
+    color
+        |> ElmColor.toRgba
+        |> (\c -> rgba c.red c.green c.blue c.alpha)
+
+
+fromUiColor : Color -> ElmColor.Color
+fromUiColor color =
+    color
+        |> toRgb
+        |> (\c -> ElmColor.fromRgba { red = c.red, green = c.green, blue = c.blue, alpha = c.alpha })
+
+
+
+-- HEADING
+
+
 heading : String -> Element msg
 heading heading_ =
     paragraph [ Font.size normal ] [ text heading_ ]
@@ -29,6 +54,10 @@ heading heading_ =
 subHeading : String -> Element msg
 subHeading heading_ =
     paragraph [ Font.size smallNormal ] [ text heading_ ]
+
+
+
+-- INPUT
 
 
 inputHint : Color -> Element a -> Attribute a
@@ -41,6 +70,10 @@ inputHint background hint =
             , paddingXY xSmall 0
             ]
             hint
+
+
+
+-- TABLE
 
 
 viewFactTable : List (Attribute a) -> List (Attribute a) -> List { f | key : Element a, value : Element a } -> Element a
@@ -90,4 +123,35 @@ viewFooter =
         ]
         [ paragraph [ Font.center ] [ text "Radix Staking powered by Florian Pieper Staking" ]
         , el [ centerX ] <| text "2021"
+        ]
+
+
+
+-- SLIDER
+
+
+sliderStyle =
+    [ Element.height (Element.px 30)
+
+    -- Here is where we're creating/styling the "track"
+    , Element.behindContent
+        (Element.el
+            [ Element.width Element.fill
+            , Element.height (Element.px 1)
+            , Element.centerY
+            , Background.color darkShades
+            , Border.rounded 0
+            ]
+            Element.none
+        )
+    ]
+
+
+thumb : Input.Thumb
+thumb =
+    Input.thumb
+        [ Element.width (Element.px 16)
+        , Element.height (Element.px 16)
+        , Border.rounded 8
+        , Background.color darkShades
         ]

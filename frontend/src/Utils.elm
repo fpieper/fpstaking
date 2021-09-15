@@ -62,3 +62,12 @@ bigIntDivToFloat a b =
 bigIntSum : List BigInt -> BigInt
 bigIntSum numbers =
     List.foldl (\fee acc -> BigInt.add fee acc) (BigInt.fromInt 0) numbers
+
+
+
+-- XRD
+
+
+toXRD : BigInt -> BigInt
+toXRD subUnits =
+    BigInt.div subUnits (safeBigInt "1000000000000000000")

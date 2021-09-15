@@ -1,16 +1,21 @@
 module Page.Home exposing (..)
 
-import BigInt
+import ArchiveApi exposing (StakePosition, Validator, getStakePositions, getStakePositionsRequest, getValidatorsRequest)
+import BigInt exposing (BigInt)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
-import Element.Input as Input exposing (thumb)
+import Element.Input as Input
 import Html.Attributes
+import Http
+import Loading exposing (LoaderType(..), defaultConfig)
 import Material.Icons.Outlined exposing (build, cloud_off, face, favorite, language, notifications_active, paid, security)
+import Page.Validators exposing (addGroups)
 import Palette exposing (..)
-import UI exposing (Icon, heading, icon, inputHint, subHeading, viewContact, viewFactTable, viewFooter)
-import Utils exposing (bigIntDivToFloat, bigIntMulFloat, formatWithDecimals, safeBigInt)
+import RemoteData exposing (RemoteData(..))
+import UI exposing (Icon, heading, icon, inputHint, sliderStyle, subHeading, thumb, viewContact, viewFactTable, viewFooter)
+import Utils exposing (bigIntDivToFloat, bigIntMulFloat, bigIntSum, formatWithDecimals, safeBigInt, toXRD)
 
 
 
@@ -18,12 +23,18 @@ import Utils exposing (bigIntDivToFloat, bigIntMulFloat, formatWithDecimals, saf
 
 
 type alias Model =
-    { tokensStaked : Int
-    , unlockedTokensShare : Int
-    , stakingRatio : Int
+    { validators : RemoteData Http.Error (List Validator)
+    , stakedTokens : StakedTokens
+    , stakedTokensRaw : String
+    , totalStake : BigInt
     , validatorFee : Float
     , uptime : Float
     }
+
+
+type StakedTokens
+    = StakeAmount Int
+    | WalletAddress String (RemoteData Http.Error (List StakePosition))
 
 
 
@@ -32,13 +43,14 @@ type alias Model =
 
 init : ( Model, Cmd Msg )
 init =
-    ( { tokensStaked = 0
-      , unlockedTokensShare = 35
-      , stakingRatio = 70
+    ( { validators = NotAsked
+      , totalStake = BigInt.fromInt 0
+      , stakedTokens = StakeAmount 0
+      , stakedTokensRaw = ""
       , validatorFee = 4
       , uptime = 100
       }
-    , Cmd.none
+    , getValidatorsRequest GotValidators
     )
 
 
@@ -47,45 +59,78 @@ init =
 
 
 type Msg
-    = Noop
-    | TokensStakedChanged String
-    | UnlockedTokensShareChanged Float
-    | StakingRatioChanged Float
+    = TokensStakedChanged String
     | ValidatorFeeChanged Float
     | UptimeChanged Float
+    | GotValidators (Result Http.Error (List Validator))
+    | GotStakePositions (Result Http.Error (List StakePosition))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Noop ->
-            ( model, Cmd.none )
-
         TokensStakedChanged tokens ->
-            ( if String.length tokens == 0 then
-                { model | tokensStaked = 0 }
+            let
+                tokens_ =
+                    String.trim tokens
+            in
+            if String.length tokens_ == 0 then
+                ( { model | stakedTokens = StakeAmount 0, stakedTokensRaw = tokens }, Cmd.none )
 
-              else
-                case String.toInt tokens of
+            else if String.length tokens_ == 65 then
+                ( { model | stakedTokens = WalletAddress tokens_ Loading, stakedTokensRaw = tokens }, getStakePositionsRequest tokens_ GotStakePositions )
+
+            else
+                case String.toInt tokens_ of
                     Just t ->
-                        { model | tokensStaked = t }
+                        ( { model | stakedTokens = StakeAmount t, stakedTokensRaw = tokens }, Cmd.none )
 
                     Nothing ->
-                        model
-            , Cmd.none
-            )
-
-        UnlockedTokensShareChanged share ->
-            ( { model | unlockedTokensShare = round share }, Cmd.none )
-
-        StakingRatioChanged ratio ->
-            ( { model | stakingRatio = round ratio }, Cmd.none )
+                        ( { model | stakedTokens = StakeAmount 0, stakedTokensRaw = tokens }, Cmd.none )
 
         ValidatorFeeChanged fee ->
             ( { model | validatorFee = fee }, Cmd.none )
 
         UptimeChanged uptime ->
             ( { model | uptime = uptime }, Cmd.none )
+
+        GotValidators validators ->
+            case validators of
+                Ok validators_ ->
+                    ( { model
+                        | validators = Success <| addGroups validators_
+                        , totalStake =
+                            validators_
+                                |> List.map .totalDelegatedStake
+                                |> List.take 100
+                                |> bigIntSum
+                      }
+                    , Cmd.none
+                    )
+
+                Err error ->
+                    ( { model | validators = Failure error }, Cmd.none )
+
+        GotStakePositions stakePositions ->
+            case model.stakedTokens of
+                StakeAmount _ ->
+                    ( model, Cmd.none )
+
+                WalletAddress address currentStakePositions ->
+                    let
+                        newStakePositions =
+                            case stakePositions of
+                                Ok stakePositions_ ->
+                                    Success stakePositions_
+
+                                Err error ->
+                                    Failure error
+                    in
+                    ( { model
+                        | stakedTokens = WalletAddress address newStakePositions
+                      }
+                    , Cmd.none
+                    )
 
 
 
@@ -183,33 +228,6 @@ viewBenefits device model =
         ]
 
 
-sliderStyle =
-    [ Element.height (Element.px 30)
-
-    -- Here is where we're creating/styling the "track"
-    , Element.behindContent
-        (Element.el
-            [ Element.width Element.fill
-            , Element.height (Element.px 1)
-            , Element.centerY
-            , Background.color darkShades
-            , Border.rounded 0
-            ]
-            Element.none
-        )
-    ]
-
-
-thumb : Input.Thumb
-thumb =
-    Input.thumb
-        [ Element.width (Element.px 16)
-        , Element.height (Element.px 16)
-        , Border.rounded 8
-        , Background.color darkShades
-        ]
-
-
 viewStakingCalculator : Device -> Model -> Element Msg
 viewStakingCalculator device model =
     column
@@ -237,61 +255,23 @@ viewStakingCalculator device model =
             [ subHeading "How much staking rewards do I earn?"
             ]
         , Input.text
-            [ inputHint mainBrand <| text "XRD"
-            , Background.color mainBrand
-            , Border.color darkShades
-            , Font.semiBold
-            ]
+            ((case model.stakedTokens of
+                StakeAmount _ ->
+                    [ inputHint mainBrand <| text "XRD" ]
+
+                _ ->
+                    []
+             )
+                ++ [ Background.color mainBrand
+                   , Border.color darkShades
+                   , Font.semiBold
+                   ]
+            )
             { onChange = TokensStakedChanged
             , text =
-                String.fromInt model.tokensStaked
-                    |> (\t ->
-                            if t == "0" then
-                                ""
-
-                            else
-                                t
-                       )
+                model.stakedTokensRaw
             , placeholder = Nothing
-            , label = Input.labelAbove [] <| text "Staked Tokens"
-            }
-        , Input.slider
-            sliderStyle
-            { onChange = UnlockedTokensShareChanged
-            , label =
-                Input.labelAbove [] <|
-                    row [ width fill ]
-                        [ text "Unlocked Tokens"
-                        , el [ Font.color darkShades, Font.semiBold, alignRight ] <|
-                            text <|
-                                String.fromInt model.unlockedTokensShare
-                                    ++ "%"
-                        ]
-            , min = 35
-            , max = 100
-            , step = Just 5
-            , value = toFloat model.unlockedTokensShare
-            , thumb =
-                thumb
-            }
-        , Input.slider
-            sliderStyle
-            { onChange = StakingRatioChanged
-            , label =
-                Input.labelAbove [] <|
-                    row [ width fill ]
-                        [ text "Staking Ratio"
-                        , el [ Font.color darkShades, Font.semiBold, alignRight ] <|
-                            text <|
-                                String.fromInt model.stakingRatio
-                                    ++ "%"
-                        ]
-            , min = 0
-            , max = 100
-            , step = Just 5
-            , value = toFloat model.stakingRatio
-            , thumb =
-                thumb
+            , label = Input.labelAbove [] <| text "Staked Tokens / Wallet Address"
             }
         , Input.slider
             sliderStyle
@@ -332,14 +312,24 @@ viewStakingCalculator device model =
                 thumb
             }
         , let
-            circulating =
-                bigIntMulFloat (toFloat model.unlockedTokensShare / 100) (safeBigInt "3842000000")
+            tokensStaked =
+                case model.stakedTokens of
+                    StakeAmount amount ->
+                        amount
+
+                    WalletAddress _ (Success positions) ->
+                        positions
+                            |> List.map (\p -> p.amount |> toXRD |> BigInt.toString |> String.toInt |> Maybe.withDefault 0)
+                            |> List.sum
+
+                    _ ->
+                        0
 
             totalStaked =
-                bigIntMulFloat (toFloat model.stakingRatio / 100) circulating
+                toXRD model.totalStake
 
             stakingShare =
-                bigIntDivToFloat (BigInt.fromInt model.tokensStaked) totalStaked * 100
+                bigIntDivToFloat (BigInt.fromInt tokensStaked) totalStaked * 100
 
             feeFactor =
                 1 - (model.validatorFee / 100)
@@ -351,38 +341,92 @@ viewStakingCalculator device model =
                 (stakingShare / 100) * 300000000 * feeFactor * uptimeFactor
 
             apy =
-                if model.tokensStaked == 0 then
+                if tokensStaked == 0 then
                     0
 
                 else
-                    (stackingRewards / toFloat model.tokensStaked) * 100
+                    (stackingRewards / toFloat tokensStaked) * 100
           in
-          row [ width fill, spacing normal ]
-            [ viewFactTable [ width fill, spacing small ]
-                []
-                [ { key = text "Circulating"
-                  , value =
-                        el [ alignRight ] <| text <| formatWithDecimals 2 (bigIntDivToFloat circulating (safeBigInt "1000000000")) ++ "B XRD"
-                  }
-                , { key = text "Total Staked"
-                  , value = el [ alignRight ] <| text <| formatWithDecimals 2 (bigIntDivToFloat totalStaked (safeBigInt "1000000000")) ++ "B XRD"
-                  }
-                , { key = text "Rewards"
-                  , value = el [ alignRight, Font.semiBold ] <| text <| String.fromInt (round stackingRewards) ++ " XRD"
-                  }
-                , { key = text "APY"
-                  , value = el [ alignRight, Font.semiBold ] <| text <| formatWithDecimals 2 apy ++ " %"
-                  }
-                ]
-            ]
+          case model.stakedTokens of
+            WalletAddress _ Loading ->
+                el [ centerX, centerY ] <|
+                    html <|
+                        Loading.render
+                            DoubleBounce
+                            { defaultConfig | color = "#2E294E", size = toFloat large, speed = 1 }
+                            Loading.On
+
+            _ ->
+                row [ width fill, spacing normal ]
+                    [ viewFactTable [ width fill, spacing small ]
+                        []
+                        [ { key = text "Total Staked"
+                          , value = el [ alignRight ] <| text <| formatWithDecimals 2 (bigIntDivToFloat totalStaked (safeBigInt "1000000000")) ++ "B XRD"
+                          }
+                        , { key = text "Staked"
+                          , value = el [ alignRight ] <| text <| String.fromInt tokensStaked ++ " XRD"
+                          }
+                        , { key = text "Rewards"
+                          , value = el [ alignRight, Font.semiBold ] <| text <| String.fromInt (round stackingRewards) ++ " XRD"
+                          }
+                        , { key = text "APY"
+                          , value = el [ alignRight, Font.semiBold ] <| text <| formatWithDecimals 2 apy ++ " %"
+                          }
+                        ]
+                    ]
         ]
 
 
 viewUptime : Model -> Element Msg
 viewUptime model =
+    let
+        validator : Maybe Validator
+        validator =
+            case model.validators of
+                Success validators ->
+                    List.filter (\v -> v.address == "rv1qfxktwkq9amdh678cxfynzt4zeua2tkh8nnrtcjpt7fyl0lmu8r3urllukm") validators |> List.head
+
+                _ ->
+                    Nothing
+    in
     column [ centerX, spacing normal ]
         [ el [ centerX ] <| heading "Uptime"
-        , el [ centerX ] <| text "Coming soon"
+        , el [ centerX ] <|
+            text <|
+                case model.validators of
+                    Success validators ->
+                        validators
+                            |> List.filter (\v -> v.address == "rv1qfxktwkq9amdh678cxfynzt4zeua2tkh8nnrtcjpt7fyl0lmu8r3urllukm")
+                            |> List.head
+                            |> Maybe.map (\v -> formatWithDecimals 2 v.uptimePercentage ++ "%")
+                            |> Maybe.withDefault ""
+
+                    _ ->
+                        ""
+        ]
+
+
+viewValidators : Element Msg
+viewValidators =
+    column [ centerX, spacing normal ]
+        [ el [ centerX, Font.center ] <| heading "Validators"
+        , link
+            [ centerX
+            , Background.color darkShades
+            , padding small
+            , Font.color white
+            , mouseOver [ alpha 0.95 ]
+            , Border.rounded 5
+            , Border.shadow
+                { offset = ( toFloat xxSmall, toFloat xxSmall )
+                , size = 0
+                , blur = toFloat small
+                , color = blackAlpha 0.4
+                }
+            ]
+            { url = "/validators"
+            , label = text "Show All Radix Validators"
+            }
         ]
 
 
@@ -415,6 +459,7 @@ view device model =
         , viewValidatorAddress
         , viewStakingCalculator device model
         , viewUptime model
+        , viewValidators
         , viewContact
         , viewFooter
         ]

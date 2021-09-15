@@ -1,12 +1,14 @@
 module Page.Validators exposing (..)
 
+import ArchiveApi exposing (Group, Validator, getValidatorsRequest)
 import BigInt exposing (BigInt)
+import Color.Interpolate exposing (interpolate)
 import Dict exposing (Dict)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
-import Element.Input as Input exposing (thumb)
+import Element.Input as Input
 import FormatNumber
 import FormatNumber.Locales exposing (Decimals(..), usLocale)
 import Html exposing (Html)
@@ -21,8 +23,8 @@ import Material.Icons.Outlined exposing (build, cloud_off, face, favorite, langu
 import Material.Icons.Types exposing (Coloring)
 import Palette exposing (..)
 import RemoteData exposing (RemoteData(..))
-import UI exposing (Icon, heading, icon, inputHint, subHeading, viewContact, viewFactTable, viewFooter)
-import Utils exposing (bigIntDivToFloat, bigIntMulFloat, bigIntSum, formatWithDecimals, safeBigInt)
+import UI exposing (Icon, fromUiColor, heading, icon, inputHint, sliderStyle, subHeading, thumb, toUiColor, viewContact, viewFactTable, viewFooter)
+import Utils exposing (bigIntDivToFloat, bigIntMulFloat, bigIntSum, formatWithDecimals, safeBigInt, toXRD)
 
 
 
@@ -32,32 +34,9 @@ import Utils exposing (bigIntDivToFloat, bigIntMulFloat, bigIntSum, formatWithDe
 type alias Model =
     { validators : RemoteData Http.Error (List Validator)
     , totalStake : BigInt
-    }
-
-
-type alias Validator =
-    { totalDelegatedStake : BigInt
-    , uptimePercentage : Float
-    , proposalsMissed : Int
-    , address : String
-    , infoUrl : String
-    , ownerDelegation : BigInt
-    , name : String
-    , fee : Float
-    , registered : Bool
-    , ownerAddress : String
-    , acceptsExternalStake : Bool
-    , proposalCompleted : Int
-    , group : Maybe Group
-    , rank : Int
-    , stakeShare : Float
-    }
-
-
-type alias Group =
-    { name : String
-    , totalStake : BigInt
-    , stakeShare : Float
+    , tokensStaked : Int
+    , validatorFee : Float
+    , uptime : Float
     }
 
 
@@ -108,6 +87,10 @@ addGroups validators =
             , buildGroup "✅RadCrew"
                 [ "rv1qgaftlzpdxaacv3jmf0x9vlys3ap0mngfea8gsedph4ckaya0gqe6h9mv6f"
                 , "rv1qf53n265drur37lkqcun5sa8j0h0aqpvpuxh3r2nz7xzdskvwcy9zkpyh42"
+                ]
+            , buildGroup "ITS Australia and Ideomaker"
+                [ "rv1qgk7asalvem6y06asnxwt8rgx05gvl9vzrldnkshvat3uysxmkx9gmkv7y2"
+                , "rv1qg923hl7f725cs06eg5gmdcy4pfvpa8mfnjcw669traquj28c96z5w0rld0"
                 ]
 
             {--, buildGroup "🔗 Radixnode.io"
@@ -196,91 +179,14 @@ addGroups validators =
 
 init : ( Model, Cmd Msg )
 init =
-    ( { validators = Loading, totalStake = BigInt.fromInt 0 }
-    , getValidatorsRequest
+    ( { validators = Loading
+      , totalStake = BigInt.fromInt 0
+      , tokensStaked = 0
+      , validatorFee = 4
+      , uptime = 100
+      }
+    , getValidatorsRequest GotValidators
     )
-
-
-
--- HTTP
-
-
-getValidatorsRequest : Cmd Msg
-getValidatorsRequest =
-    Http.post
-        { url = "https://mainnet.radixdlt.com/archive"
-        , body = jsonBody getNextEpochSet
-        , expect = Http.expectJson GotValidators validatorsDecoder
-        }
-
-
-bigIntDecoder : Decoder BigInt
-bigIntDecoder =
-    string
-        |> andThen
-            (\value ->
-                case BigInt.fromIntString value of
-                    Just number ->
-                        succeed number
-
-                    Nothing ->
-                        fail "Invalid BigInt"
-            )
-
-
-floatDecoder : Decoder Float
-floatDecoder =
-    string
-        |> andThen
-            (\value ->
-                case String.toFloat value of
-                    Just number ->
-                        succeed number
-
-                    Nothing ->
-                        fail "Invalid Float"
-            )
-
-
-validatorDecoder : Decoder Validator
-validatorDecoder =
-    Decode.succeed Validator
-        |> required "totalDelegatedStake" bigIntDecoder
-        |> required "uptimePercentage" floatDecoder
-        |> required "proposalsMissed" int
-        |> required "address" string
-        |> required "infoURL" string
-        |> required "ownerDelegation" bigIntDecoder
-        |> required "name" (Decode.map String.trim string)
-        |> required "validatorFee" floatDecoder
-        |> required "registered" bool
-        |> required "ownerAddress" string
-        |> required "isExternalStakeAccepted" bool
-        |> required "proposalsCompleted" int
-        |> hardcoded Nothing
-        |> hardcoded 0
-        |> hardcoded 0
-
-
-validatorsDecoder : Decoder (List Validator)
-validatorsDecoder =
-    field "result" <|
-        field "validators" <|
-            list validatorDecoder
-
-
-getNextEpochSet : Encode.Value
-getNextEpochSet =
-    Encode.object
-        [ ( "jsonrpc", Encode.string "2.0" )
-        , ( "method", Encode.string "validators.get_next_epoch_set" )
-        , ( "params"
-          , Encode.object
-                [ ( "size", Encode.int 200 )
-                ]
-          )
-        , ( "id", Encode.int 1 )
-        ]
 
 
 
@@ -288,15 +194,34 @@ getNextEpochSet =
 
 
 type Msg
-    = Noop
+    = TokensStakedChanged String
+    | ValidatorFeeChanged Float
+    | UptimeChanged Float
     | GotValidators (Result Http.Error (List Validator))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Noop ->
-            ( model, Cmd.none )
+        TokensStakedChanged tokens ->
+            ( if String.length tokens == 0 then
+                { model | tokensStaked = 0 }
+
+              else
+                case String.toInt tokens of
+                    Just t ->
+                        { model | tokensStaked = t }
+
+                    Nothing ->
+                        model
+            , Cmd.none
+            )
+
+        ValidatorFeeChanged fee ->
+            ( { model | validatorFee = fee }, Cmd.none )
+
+        UptimeChanged uptime ->
+            ( { model | uptime = uptime }, Cmd.none )
 
         GotValidators validators ->
             case validators of
@@ -306,6 +231,7 @@ update msg model =
                         , totalStake =
                             validators_
                                 |> List.map .totalDelegatedStake
+                                |> List.take 100
                                 |> bigIntSum
                       }
                     , Cmd.none
@@ -349,9 +275,127 @@ viewHeader device model =
         ]
 
 
-toXRD : BigInt -> BigInt
-toXRD subUnits =
-    BigInt.div subUnits (safeBigInt "1000000000000000000")
+viewStakingCalculator : Device -> Model -> Element Msg
+viewStakingCalculator device model =
+    column
+        [ centerX
+        , spacing normal
+        , padding
+            (case device.class of
+                Phone ->
+                    small
+
+                _ ->
+                    large
+            )
+        , Background.color mainBrand
+        , Font.color darkShades
+        , Border.rounded 5
+        , Border.shadow
+            { offset = ( toFloat xxSmall, toFloat xxSmall )
+            , size = 0
+            , blur = toFloat xSmall
+            , color = blackAlpha 0.1
+            }
+        ]
+        [ paragraph [ Font.center ]
+            [ subHeading "How much staking rewards do I earn?"
+            ]
+        , Input.text
+            [ inputHint mainBrand <| text "XRD"
+            , Background.color mainBrand
+            , Border.color darkShades
+            , Font.semiBold
+            ]
+            { onChange = TokensStakedChanged
+            , text =
+                String.fromInt model.tokensStaked
+                    |> (\t ->
+                            if t == "0" then
+                                ""
+
+                            else
+                                t
+                       )
+            , placeholder = Nothing
+            , label = Input.labelAbove [] <| text "Staked Tokens / Wallet Address"
+            }
+        , Input.slider
+            sliderStyle
+            { onChange = ValidatorFeeChanged
+            , label =
+                Input.labelAbove [] <|
+                    row [ width fill ]
+                        [ text "Validator Fee"
+                        , el [ Font.color darkShades, Font.semiBold, alignRight ] <|
+                            text <|
+                                formatWithDecimals 1 model.validatorFee
+                                    ++ "%"
+                        ]
+            , min = 0
+            , max = 20
+            , step = Just 0.1
+            , value = model.validatorFee
+            , thumb =
+                thumb
+            }
+        , Input.slider
+            sliderStyle
+            { onChange = UptimeChanged
+            , label =
+                Input.labelAbove [] <|
+                    row [ width fill ]
+                        [ text "Uptime"
+                        , el [ Font.color darkShades, Font.semiBold, alignRight ] <|
+                            text <|
+                                formatWithDecimals 2 model.uptime
+                                    ++ "%"
+                        ]
+            , min = 98
+            , max = 100
+            , step = Just 0.02
+            , value = model.uptime
+            , thumb =
+                thumb
+            }
+        , let
+            totalStaked =
+                toXRD model.totalStake
+
+            stakingShare =
+                bigIntDivToFloat (BigInt.fromInt model.tokensStaked) totalStaked * 100
+
+            feeFactor =
+                1 - (model.validatorFee / 100)
+
+            uptimeFactor =
+                ((model.uptime / 100) - 0.98) / 0.02
+
+            stackingRewards =
+                (stakingShare / 100) * 300000000 * feeFactor * uptimeFactor
+
+            apy =
+                if model.tokensStaked == 0 then
+                    0
+
+                else
+                    (stackingRewards / toFloat model.tokensStaked) * 100
+          in
+          row [ width fill, spacing normal ]
+            [ viewFactTable [ width fill, spacing small ]
+                []
+                [ { key = text "Total Staked"
+                  , value = el [ alignRight ] <| text <| formatWithDecimals 3 (bigIntDivToFloat totalStaked (safeBigInt "1000000000")) ++ "B XRD"
+                  }
+                , { key = text "Rewards"
+                  , value = el [ alignRight, Font.semiBold ] <| text <| String.fromInt (round stackingRewards) ++ " XRD"
+                  }
+                , { key = text "APY"
+                  , value = el [ alignRight, Font.semiBold ] <| text <| formatWithDecimals 2 apy ++ " %"
+                  }
+                ]
+            ]
+        ]
 
 
 formatStake : BigInt -> String
@@ -391,13 +435,19 @@ type SortOrder
     | Descending
 
 
-viewValidators : Device -> List Validator -> Color -> SortOrder -> Element Msg
-viewValidators device validators zoneColor sortOrder =
+viewValidators : Device -> List Validator -> Color -> SortOrder -> Bool -> Element Msg
+viewValidators device validators zoneColor sortOrder combine =
     let
         sortedValidators =
             List.sortWith
                 (\a b ->
-                    case BigInt.compare (nodeRunnerStake a) (nodeRunnerStake b) of
+                    case
+                        if combine then
+                            BigInt.compare (nodeRunnerStake a) (nodeRunnerStake b)
+
+                        else
+                            BigInt.compare a.totalDelegatedStake b.totalDelegatedStake
+                    of
                         LT ->
                             if sortOrder == Ascending then
                                 LT
@@ -485,7 +535,11 @@ viewValidators device validators zoneColor sortOrder =
                     \index validator ->
                         case validator.group of
                             Nothing ->
-                                stakeCell validator.totalDelegatedStake validator.stakeShare
+                                if combine then
+                                    stakeCell validator.totalDelegatedStake validator.stakeShare
+
+                                else
+                                    el [ cellPadding, Font.alignRight, centerX, centerY ] <| text "= validator"
 
                             Just group ->
                                 stakeCell group.totalStake group.stakeShare
@@ -496,7 +550,11 @@ viewValidators device validators zoneColor sortOrder =
                     \index validator ->
                         case validator.group of
                             Nothing ->
-                                el [ cellPadding, Font.alignRight, centerX, centerY ] <| text "= combined"
+                                if combine then
+                                    el [ cellPadding, Font.alignRight, centerX, centerY ] <| text "= combined"
+
+                                else
+                                    stakeCell validator.totalDelegatedStake validator.stakeShare
 
                             Just group ->
                                 stakeCell validator.totalDelegatedStake validator.stakeShare
@@ -522,9 +580,26 @@ viewValidators device validators zoneColor sortOrder =
                     \index validator ->
                         el [ cellPadding, Font.alignRight, centerX, centerY ] <|
                             text <|
-                                formatWithDecimals 1 validator.uptimePercentage
+                                formatWithDecimals 2 validator.uptimePercentage
                                     ++ "%"
               }
+
+            {--, { header = headerCell [ Font.alignRight ] <| text "Proposals Completed"
+              , width = shrink
+              , view =
+                    \index validator ->
+                        el [ cellPadding, Font.alignRight, centerX, centerY ] <|
+                            text <|
+                                String.fromInt validator.proposalCompleted
+              }
+            , { header = headerCell [ Font.alignRight ] <| text "Proposals Missed"
+              , width = shrink
+              , view =
+                    \index validator ->
+                        el [ cellPadding, Font.alignRight, centerX, centerY ] <|
+                            text <|
+                                String.fromInt validator.proposalsMissed
+              }--}
             , { header = headerCell [ Font.alignRight ] <| text "Fee"
               , width = shrink
               , view =
@@ -588,8 +663,8 @@ headingWithIcon icon_ label_ color_ =
         ]
 
 
-viewValidatorZone : Device -> (Int -> Coloring -> Html Msg) -> String -> Color -> String -> List Validator -> List String -> SortOrder -> Element Msg
-viewValidatorZone device icon_ headingLabel color_ emptyMessage validators description sortOrder =
+viewValidatorZone : Device -> (Int -> Coloring -> Html Msg) -> String -> Color -> String -> List Validator -> List String -> SortOrder -> Bool -> Element Msg
+viewValidatorZone device icon_ headingLabel color_ emptyMessage validators description sortOrder combine =
     column [ width fill, spacing normal ]
         [ headingWithIcon icon_ headingLabel color_
         , column [ spacing normal, centerX ] <| List.map (\t -> paragraph [ spacing small, centerX, width <| maximum 800 fill, Font.center ] [ text t ]) description
@@ -597,7 +672,7 @@ viewValidatorZone device icon_ headingLabel color_ emptyMessage validators descr
             text emptyMessage
 
           else
-            viewValidators device validators color_ sortOrder
+            viewValidators device validators color_ sortOrder combine
         ]
 
 
@@ -622,8 +697,7 @@ viewValidatorZones device model =
                     List.filter (\v -> v.rank > 100) validators
             in
             column [ width fill, spacing xLarge ]
-                [ el [ centerX ] <| text <| "Total Stake: " ++ formatStake model.totalStake ++ " XRD"
-                , column [ width fill, spacing large ]
+                [ column [ width fill, spacing large ]
                     [ let
                         safeValidators =
                             List.filter
@@ -645,6 +719,7 @@ viewValidatorZones device model =
                         safeValidators
                         [ "The validators in the safe zone do not have more than 2% of combined node operator stake and therefore are good candidates for increasing network decentralisation and security." ]
                         Ascending
+                        True
                     , let
                         warningValidators =
                             List.filter
@@ -666,6 +741,7 @@ viewValidatorZones device model =
                         warningValidators
                         [ "The validators in the warning zone have quite some stake. Maybe better pick another validator of the safe zone." ]
                         Ascending
+                        True
                     , let
                         dangerValidators =
                             List.filter
@@ -689,6 +765,7 @@ viewValidatorZones device model =
                         , "Be warned: Your cat will die otherwise."
                         ]
                         Ascending
+                        True
                     , viewValidatorZone device
                         sentiment_neutral
                         "NOT IN NEXT EPOCH"
@@ -697,20 +774,59 @@ viewValidatorZones device model =
                         beyond100validators
                         [ "The following validators will be not be selected for the next epoch. You will not earn rewards in this case." ]
                         Descending
+                        False
                     ]
                 ]
 
         Failure err ->
-            text "Error loading validators!"
+            paragraph []
+                [ text <| Debug.toString err
+                , text "Error loading validators!"
+                ]
 
         NotAsked ->
             none
+
+
+viewStatistics : Model -> Element Msg
+viewStatistics model =
+    case model.validators of
+        Success _ ->
+            el [ centerX ] <| text <| "Total Stake: " ++ formatStake model.totalStake ++ " XRD"
+
+        _ ->
+            none
+
+
+viewCallToAction : Element Msg
+viewCallToAction =
+    link
+        [ centerX
+        , Background.color darkShades
+        , padding small
+        , Font.color white
+        , mouseOver [ alpha 0.95 ]
+        , Border.rounded 5
+        , Border.shadow
+            { offset = ( toFloat xxSmall, toFloat xxSmall )
+            , size = 0
+            , blur = toFloat small
+            , color = blackAlpha 0.4
+            }
+        ]
+        { url = "/"
+        , label = text "Stake on 🚀 Florian Pieper Staking"
+        }
 
 
 view : Device -> Model -> Element Msg
 view device model =
     column [ width fill, spacing xLarge, Font.color darkShades, paddingXY 0 0 ]
         [ viewHeader device model
+        , viewStatistics model
+
+        --, viewStakingCalculator device model
+        , viewCallToAction
         , viewValidatorZones device model
         , viewContact
         , viewFooter

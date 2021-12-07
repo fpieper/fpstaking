@@ -84,10 +84,11 @@ addGroups validators =
                 [ "rv1qdfhzmygv2vmxuc4702pttrpkep0vkc06a64zlenmvujn2yvq2u3y93e8ky"
                 , "rv1q29pg6kl80m43h0mewh8w8zfnhnpg50e3plwaexqx29vq2savjnzkdn89kp"
                 ]
-            , buildGroup "✅RadCrew"
+
+            {--, buildGroup "✅RadCrew"
                 [ "rv1qgaftlzpdxaacv3jmf0x9vlys3ap0mngfea8gsedph4ckaya0gqe6h9mv6f"
                 , "rv1qf53n265drur37lkqcun5sa8j0h0aqpvpuxh3r2nz7xzdskvwcy9zkpyh42"
-                ]
+                ]--}
             , buildGroup "ITS Australia and Ideomaker"
                 [ "rv1qgk7asalvem6y06asnxwt8rgx05gvl9vzrldnkshvat3uysxmkx9gmkv7y2"
                 , "rv1qg923hl7f725cs06eg5gmdcy4pfvpa8mfnjcw669traquj28c96z5w0rld0"
@@ -435,6 +436,11 @@ type SortOrder
     | Descending
 
 
+isOwnValidator : Validator -> Bool
+isOwnValidator validator =
+    validator.address == "rv1qfxktwkq9amdh678cxfynzt4zeua2tkh8nnrtcjpt7fyl0lmu8r3urllukm"
+
+
 viewValidators : Device -> List Validator -> Color -> SortOrder -> Bool -> Element Msg
 viewValidators device validators zoneColor sortOrder combine =
     let
@@ -524,7 +530,30 @@ viewValidators device validators zoneColor sortOrder combine =
                             el [ cellPadding, Font.medium, centerX, centerY ] <| text trimmedName
 
                         else
-                            link [ mouseOver [ Font.color zoneColor ], cellPadding, Font.medium, centerX, centerY ]
+                            let
+                                style =
+                                    if isOwnValidator validator then
+                                        [ cellPadding
+                                        , Font.medium
+                                        , centerX
+                                        , centerY
+                                        , Background.color darkShades
+                                        , padding small
+                                        , Font.color white
+                                        , mouseOver [ alpha 0.95 ]
+                                        , Border.rounded 5
+                                        , Border.shadow
+                                            { offset = ( toFloat xxSmall, toFloat xxSmall )
+                                            , size = 0
+                                            , blur = toFloat small
+                                            , color = blackAlpha 0.4
+                                            }
+                                        ]
+
+                                    else
+                                        [ mouseOver [ Font.color zoneColor ], cellPadding, Font.medium, centerX, centerY ]
+                            in
+                            link style
                                 { url = validator.infoUrl
                                 , label = text trimmedName
                                 }

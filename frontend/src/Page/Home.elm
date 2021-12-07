@@ -47,7 +47,7 @@ init =
       , totalStake = BigInt.fromInt 0
       , stakedTokens = StakeAmount 0
       , stakedTokensRaw = ""
-      , validatorFee = 4
+      , validatorFee = 0
       , uptime = 100
       }
     , getValidatorsRequest GotValidators
@@ -208,7 +208,7 @@ viewBenefits device model =
                 [ htmlAttribute <| Html.Attributes.style "justify-content" "center"
                 ]
                 [ viewBenefit device cloud_off "Decentralised" [ text "A core principle of decentralised ledgers (DLT) like Radix is decentralisation. That is why my validator is not hosted at common cloud providers but multiple smaller ones." ]
-                , viewBenefit device paid "Low Fees" [ text "My validator fee is low with only 3.4%. Low fees combined with high uptime ensure that your rewards are maximised. You can calculate your expected APY in my staking calculator." ]
+                , viewBenefit device paid "Low Fees" [ text "My validator fee is 0% until end of the year (in January 3.4% again). Low fees combined with high uptime ensure that your rewards are maximised. You can calculate your expected APY in my staking calculator." ]
                 , viewBenefit device language "High availability" [ text "Multiple backup nodes in different data centers allow to maximise uptime. I also developed seamless upgrade and failover scripts to achieve zero maintenance downtime." ]
                 , viewBenefit device favorite "Commitment" [ text "I want to make Radix a success and put a lot of effort into my validator. Also, I will only be staking on my own node and putting my money where my mouth is." ]
                 , viewBenefit device notifications_active "Realtime Alerts" [ text "The validator is constantly monitored 24/7 in real time to immediately trigger alerts in case of outtakes to minimise downtime." ]

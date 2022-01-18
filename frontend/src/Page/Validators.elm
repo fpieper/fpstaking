@@ -139,6 +139,13 @@ addGroups validators =
                 , "rv1qgdue83wgezwrdsn2ngqnqpa74euykulngsqxernzkzcspkpula4kle75q6"
                 , "rv1qgcw6z26qr3mslfjkz82s7qtmgqnugq9amsnl8jwqzxhtrax4mqk7qsl6vu"
                 ]
+            , buildGroup "AMR Node 🇷🇺 and RadStaking 🇷🇺"
+                [ "rv1q03txhtq9d4v79len5jk65hzecgzdwqr94cu9pqd3v0r8dp923r9z37n7hw"
+                , "rv1qf3hq39mnxx6ln5yfy5gmgnm2vuxvpjxm8rhymqahq09n4vntyk77a5nfre"
+                ]
+            , buildGroup "DogeCube and RadixDLT Staking"
+                [ "rv1qgw68kqkryhgxvcvp04wfss0k76svxkqv3zvf57rcvrkuzdluu9ay4snzxc"
+                ]
             ]
 
         validatorGroup : Dict String GroupFull

@@ -1,12 +1,12 @@
 module Page.Home exposing (..)
 
-import ArchiveApi exposing (StakePosition, Validator, getStakePositions, getStakePositionsRequest, getValidatorsRequest)
 import BigInt exposing (BigInt)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
+import GatewayApi exposing (StakePosition, Validator, getStakePositionsRequest, getValidatorsRequest)
 import Html.Attributes
 import Http
 import Loading exposing (LoaderType(..), defaultConfig)

@@ -1,6 +1,5 @@
 module Page.Validators exposing (..)
 
-import ArchiveApi exposing (Group, Validator, getValidatorsRequest)
 import BigInt exposing (BigInt)
 import Color.Interpolate exposing (interpolate)
 import Dict exposing (Dict)
@@ -11,6 +10,7 @@ import Element.Font as Font
 import Element.Input as Input
 import FormatNumber
 import FormatNumber.Locales exposing (Decimals(..), usLocale)
+import GatewayApi exposing (Group, Validator, getValidatorsRequest)
 import Html exposing (Html)
 import Html.Attributes
 import Http exposing (emptyBody, jsonBody)

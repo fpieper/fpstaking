@@ -233,7 +233,11 @@ update msg model =
 
         GotValidators validators ->
             case validators of
-                Ok validators_ ->
+                Ok allValidators ->
+                    let
+                        validators_ =
+                            List.filter .registered allValidators
+                    in
                     ( { model
                         | validators = Success <| addGroups validators_
                         , totalStake =

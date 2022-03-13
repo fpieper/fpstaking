@@ -76,9 +76,12 @@ addGroups validators =
         groups =
             [ buildGroup "Artistizen"
                 [ "rv1qdawnqw6l9dmsx287gvw3nl7tndx8agh9e0hmw24zdxnpdfp267exk8ljwu"
-                , "rv1qggt5w4g800k5w3du63g0j86u8ayaqkzdgyxfkw3uc93826zxef22gjr64m"
-                , "rv1q0m9329x6tywt3kggatrtr8ut8qvxqw9lsfw2w8phrvvv2qydw9xsk88slq"
-                , "rv1q0xq9jg3vcuvelflpdvkcvzvgtsd6k0tprf5u734nnl4xq06hecajc40rqw"
+                , "rv1qtztn2t7smu8nn3gk9cnh9cl66ju7z9kvmatpqyx5h295v4304xmwnjf43n"
+                , "rv1qwe3k036lrj79s06e8cx2kzcsrjmenxgug6d045jzer29sur3cfyv4r0a3t"
+
+                --, "rv1qggt5w4g800k5w3du63g0j86u8ayaqkzdgyxfkw3uc93826zxef22gjr64m"
+                --, "rv1q0m9329x6tywt3kggatrtr8ut8qvxqw9lsfw2w8phrvvv2qydw9xsk88slq"
+                --, "rv1q0xq9jg3vcuvelflpdvkcvzvgtsd6k0tprf5u734nnl4xq06hecajc40rqw"
                 ]
             , buildGroup "CaviarNine"
                 [ "rv1qdfhzmygv2vmxuc4702pttrpkep0vkc06a64zlenmvujn2yvq2u3y93e8ky"
@@ -145,6 +148,11 @@ addGroups validators =
                 ]
             , buildGroup "DogeCube and RadixDLT Staking"
                 [ "rv1qgw68kqkryhgxvcvp04wfss0k76svxkqv3zvf57rcvrkuzdluu9ay4snzxc"
+                , "rv1qd9wlc66dzssnkzwja2mrnxsdezzkmxg00xqzrkn4039zpghaj0rs43mz63"
+                ]
+            , buildGroup "XRDScan"
+                [ "rv1q250v8v6a7s6594tlvv6ndkk880dc3mgxaqssa4jeet890qczty9vesjmvn"
+                , "rv1qw00edymt8x7ch63s4ukyncgq6ggr2krsdlyg6rz5g6zgt4a4qyacl2a5hy"
                 ]
             ]
 

@@ -632,7 +632,7 @@ sudo su - radixdlt
 ```
 
 ## Configuration
-Compare the new configuration `https://raw.githubusercontent.com/fpieper/fpstaking/main/docs/config/default.config` with your own and adapt your configuration.
+Compare the new configuration https://raw.githubusercontent.com/fpieper/fpstaking/main/docs/config/default.config with your own and adapt your configuration.
 ```
 nano /etc/radixdlt/node/default.config
 ```

@@ -680,6 +680,13 @@ Restart your grafana agent afterwards.
 sudo systemctl restart grafana-agent
 ```
 
+## Grafana Dashboard
+The `info_counters_bft_proposals_made` metric was renamed to `info_counters_bft_pacemaker_proposals_sent`.
+In the Radix dashboard on Grafana Cloud edit the panel "Proposals Made", rename the metric and save.
+Now the data should show up again.
+I will upload an updated dashboard.json after the `missed proposals` metric is supported again.
+
+
 # Failover
 Now switch over validator over from your primary to your backup node with (prepare two SSH sessions that you just need to press enter)
 

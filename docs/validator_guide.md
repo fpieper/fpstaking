@@ -678,3 +678,23 @@ Restart your grafana agent afterwards.
 ```
 sudo systemctl restart grafana-agent
 ```
+
+# Failover
+Now switch over validator over from your primary to your backup node with (prepare two SSH sessions that you just need to press enter)
+
+On your primary node:
+```
+sudo su - radixdlt
+switch-mode fullnode
+```
+
+After the script has finished directly active validator mode on your (updated) backup node
+
+On your backup node:
+```
+sudo su - radixdlt
+switch-mode validator
+```
+
+Now repeat all the upgrade steps on your old primary node (which is still running the old version) and 
+can be your new backup node or you switch modes again after you are done.

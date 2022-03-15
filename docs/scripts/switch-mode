@@ -2,16 +2,19 @@
 
 HOST="http://localhost:3333"
 
-VALIDATOR_ADDRESS=$(curl -s -d '{"jsonrpc": "2.0", "method": "validation.get_node_info", "params": [], "id": 1}' \
-                    -H "Content-Type: application/json" -X POST "$HOST/validation" | jq -r ".result.address")
-IS_VALIDATING=$(curl -s -X POST "$HOST/validation" -H "Content-Type: application/json" \
-                -d '{"jsonrpc": "2.0", "method": "validation.get_current_epoch_data", "params": [], "id": 1}' \
-                | jq ".result.validators | any(.address == \"$VALIDATOR_ADDRESS\")")
+VALIDATOR_ADDRESS=$(curl -s -X POST "$HOST/key/list" -H "Content-Type: application/json" \
+                    -d '{"network_identifier": {"network": "mainnet"}}' \
+                    | jq -r ".public_keys[0].identifiers.validator_entity_identifier.address")
+IS_VALIDATING=$(curl -s -X POST "$HOST/entity" -H "Content-Type: application/json" \
+                -d "{\"network_identifier\": {\"network\": \"mainnet\"}, \"entity_identifier\":
+                    {\"address\": \"$VALIDATOR_ADDRESS\", \"sub_entity\": {\"address\": \"system\"}}}" \
+                | jq ".data_objects | any(.type == \"ValidatorBFTData\")")
 
 get_completed_proposals () {
-   curl -s -X POST "$HOST/validation" -H "Content-Type: application/json" \
-   -d '{"jsonrpc": "2.0", "method": "validation.get_current_epoch_data", "params": [], "id": 1}' \
-   | jq ".result.validators[] | select(.address == \"$VALIDATOR_ADDRESS\") | .proposalsCompleted"
+   curl -s -X POST "$HOST/entity" -H "Content-Type: application/json" \
+   -d "{\"network_identifier\": {\"network\": \"mainnet\"}, \"entity_identifier\":
+      {\"address\": \"$VALIDATOR_ADDRESS\", \"sub_entity\": {\"address\": \"system\"}}}" \
+    | jq ".data_objects[] | select(.type == \"ValidatorBFTData\") | .proposals_completed"
 }
 
 check_return_code () {

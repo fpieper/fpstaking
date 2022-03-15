@@ -669,7 +669,8 @@ sudo apt --purge autoremove openjdk-11-jdk
 ```
 
 ## Grafana Cloud
-You need to add `metrics_path: /prometheus/metrics` to your `grafana-agent.yaml` like described above.
+You need to add `metrics_path: /prometheus/metrics` to your `grafana-agent.yaml` like
+described in the section `Extending Grafana Agent Config` above.
 ```
 sudo nano /etc/grafana-agent.yaml
 ```

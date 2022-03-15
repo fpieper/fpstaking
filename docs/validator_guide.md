@@ -204,7 +204,7 @@ https://docs.radixdlt.com/main/node/systemd-install-node.html.
 ## Dependencies
 Install the necessary dependencies and initiate randomness to securely generate keys.
 ```
-sudo apt install -y rng-tools openjdk-11-jdk unzip jq curl
+sudo apt install -y rng-tools openjdk-17-jdk unzip jq curl
 sudo rngd -r /dev/random
 ```
 
@@ -333,7 +333,7 @@ cd /etc/radixdlt/node
 To achieve high uptime, it is important to also have a backup node for maintenance or failover.
 Your main and backup node will have the same validator key (node-keystore.ks), but they both have different fullnode keys
 (which leads to 3 different keys in total: 1 key used as validator, 2 keys used for the full nodes).
-Please also checkout this article for further details: https://docs.radixdlt.com/main/node/maintaining-uptime.html.
+Please also checkout this article for further details: https://docs.radixdlt.com/main/node-and-gateway/maintaining-uptime.html.
 
 ### Environment file
 Set java options and the previously used keystore password.
@@ -379,7 +379,7 @@ radix://tn1qt9kqzzqyj27zv4n67f2jrzgd24hsxfwe8d4kw9j4msze7rpdg3guvk07jy@54.76.86.
 ```
 
 For further detail and explanation check out the official documentation
-https://docs.radixdlt.com/main/node/systemd-install-node.html#_configuration
+https://docs.radixdlt.com/main/node-and-gateway/systemd-install-node.html#_configuration
 
 
 ## Failover
@@ -451,79 +451,24 @@ conflict with the minimal setup approach in this guide.
 
 
 ## Registering as a validator
-This is based on the official documentation https://docs.radixdlt.com/main/node/systemd-register-as-validator.html.
-Please take a look for further details, I mainly added it here because our endpoints are slightly different.
-
 First of all we make sure that our node is running in `validator mode` to register the correct node key.
 ```
 switch-mode validator
 ```
 
-Then we get the node's wallet address (`address`) with:
+To register as validator please refer to the official documentation https://docs.radixdlt.com/main/node-and-gateway/systemd-register-as-validator.html.
+Since our setup is a bit different and simpler (without Nginx, because it is not needed for a validator) we need to use a different curl command.
+
+Instead of e.g.:
 ```
-curl -s -d '{ "jsonrpc": "2.0", "method": "account.get_info", "params": [], "id":1}' -H "Content-Type: application/json" -X POST "http://localhost:3333/account" | jq
+curl -k -u admin:{nginx-admin-password} -X POST 'https://localhost/entity' --header 'Content-Type: application/json' -d '{...}'
 ```
 
-We can also get both the node's wallet address (`owner` - prefixed with `rv` (mainnet) and `tv` (stokenet))
-and the validator address (`address`)
+Use:
 ```
-curl -s -d '{"jsonrpc": "2.0", "method": "validation.get_node_info", "params": [], "id": 1}' -H "Content-Type: application/json" -X POST "http://localhost:3333/validation" | jq
+curl -s -X POST 'http://localhost:3333/entity' -H 'Content-Type: application/json' -d '{...}'
 ```
-
-Then send at least 30 XRD to `wallet address` via your Radix Desktop Wallet.
-
-Register your node (or more specifically your key as validator).
-Think about and adapt every parameter, especially:
-- `validator` - the validator address prefixed with `rv` (mainnet) or `tv` (stokenet)
-- `name`
-- `url`
-- `validatorFee` - specified to up to two decimals of precision. e.g. 1 or 1.75
-- `allowDelegation` - if false, only stake from owner below will be accepted
-- `owner` - the owner receives all validator fees
-  
-Please check the official documentation for further details https://docs.radixdlt.com/main/node/systemd-register-as-validator.html#call-endpoint-to-register-validator
-```
-curl -s -X POST 'http://localhost:3333/account' -H 'Content-Type: application/json' \
--d '{"jsonrpc": "2.0","method": "account.submit_transaction_single_step",
-"params":
-{"actions": [
-{"type": "RegisterValidator",
-"validator": "rv1qfxktwkq9amdh678cxfynzt4zeua2tkh8nnrtcjpt7fyl0lmu8r3urllukm"},
-{"type": "UpdateValidatorMetadata",
-"name": "🚀Florian Pieper Staking",
-"url": "https://florianpieperstaking.com",
-"validator": "rv1qfxktwkq9amdh678cxfynzt4zeua2tkh8nnrtcjpt7fyl0lmu8r3urllukm"},
-{"type": "UpdateValidatorFee",
-"validator": "rv1qfxktwkq9amdh678cxfynzt4zeua2tkh8nnrtcjpt7fyl0lmu8r3urllukm",
-"validatorFee": 3.4},
-{"type": "UpdateAllowDelegationFlag",
-"validator": "rv1qfxktwkq9amdh678cxfynzt4zeua2tkh8nnrtcjpt7fyl0lmu8r3urllukm",
-"allowDelegation": true},
-{"type": "UpdateValidatorOwnerAddress",
-"validator": "rv1qfxktwkq9amdh678cxfynzt4zeua2tkh8nnrtcjpt7fyl0lmu8r3urllukm",
-"owner": "rdx1qsp5tf0ykd3dd6l84dgpgrs0fgt9slwnkfc0r39wqa98tc579nns73chn9fzm" }
-]}, "id": 1}' | jq
-```
-
-You can then check if everything worked:
-```
-curl -s -d '{"jsonrpc": "2.0", "method": "validation.get_node_info", "params": [], "id": 1}' -H "Content-Type: application/json" -X POST "http://localhost:3333/validation" | jq
-```
-
-Hint: the above request can be also used to update the values.
-Just use one update action instead of all like above.
-
-For example to update the validator metadata you can use this request.
-```
-curl -s -X POST 'http://localhost:3333/account' -H 'Content-Type: application/json' \
--d '{"jsonrpc": "2.0","method": "account.submit_transaction_single_step",
-"params":
-{"actions": [
-{"type": "UpdateValidatorFee",
-"validator": "rv1qfxktwkq9amdh678cxfynzt4zeua2tkh8nnrtcjpt7fyl0lmu8r3urllukm",
-"validatorFee": 3.4}
-]}, "id": 1}' | jq
-```
+`--data-raw` / `-d` and `--header` / `-H` are synonyms. `-s` is optional and means the request progress is silent / hidden.
 
 
 # Monitoring with Grafana Cloud
@@ -544,17 +489,18 @@ sudo nano /etc/grafana-agent.yaml
 ```
 ```
 prometheus:
-configs:
-- name: integrations
-  scrape_configs:
-    - job_name: radix-mainnet-fullnode
-      static_configs:
-        - targets: ['localhost:3333']
-  remote_write:
-    - basic_auth:
-      password: secret
-      username: 123456
-      url: https://prometheus-blocks-prod-us-central1.grafana.net/api/prom/push
+    configs:
+    - name: integrations
+      scrape_configs:
+        - job_name: radix-mainnet-fullnode
+          static_configs:
+            - targets: ['localhost:3333']
+          metrics_path: /prometheus/metrics
+      remote_write:
+        - basic_auth:
+          password: secret
+          username: 123456
+          url: https://prometheus-blocks-prod-us-central1.grafana.net/api/prom/push
 ```
 
 The prefixes like `radix-mainnet` before `fullnode` or `validator` are arbitrary and can be used
@@ -646,41 +592,89 @@ sudo journalctl -f -u radixdlt-node --output=cat
 
 Shows node health (`BOOTING`, `SYNCING`, `UP`, `STALLED`, `OUT_OF_SYNC`)
 ```
-curl -s localhost:3333/health | jq
+curl -s localhost:3333/system/health | jq
 ```
 
-Show account information:
+Show node keys information:
 ```
-curl -s -d '{ "jsonrpc": "2.0", "method": "account.get_info", "params": [], "id":1}' -H "Content-Type: application/json" -X POST "http://localhost:3333/account" | jq
-```
-
-Show node information:
-```
-curl -s -d '{"jsonrpc": "2.0", "method": "validation.get_node_info", "params": [], "id": 1}' -H "Content-Type: application/json" -X POST "http://localhost:3333/validation" | jq
-```
-
-Shows `targetStateVersion` (versions are kind of Radix's blocks in Olympia - how many blocks are synced):
-```
-curl -s -X POST 'http://localhost:3333/system' -d '{"jsonrpc": "2.0", "method": "sync.get_data", "params": [], "id": 1}' | jq ".result.targetStateVersion"
-```
-
-Shows the difference sync difference to the network.
-Should be `0` if the node is fully synced (if `targetCurrentDiff` isn't `0`)
-```
-curl -s -X POST 'http://localhost:3333/system' -d '{"jsonrpc": "2.0", "method": "sync.get_data", "params": [], "id": 1}' | jq
+curl -s -X POST localhost:3333/key/list -H "Content-Type: application/json" -d '{"network_identifier": {"network": "mainnet"}}' | jq
 ```
 
 Shows current validator information:
 ```
-curl -s -d '{"jsonrpc": "2.0", "method": "validation.get_node_info", "params": [], "id": 1}' -H "Content-Type: application/json" -X POST "http://localhost:3333/validation" | jq
+curl -s -X POST localhost:3333/entity -H "Content-Type: application/json"
+    -d '{"network_identifier": {"network": "mainnet"}, "entity_identifier": {"address": "rv.....", "sub_entity": {"address": "system"}}}' | jq
 ```
 
 Get network peers:
 ```
-curl -s -d '{"jsonrpc": "2.0", "method": "networking.get_peers", "params": [], "id": 1}' -H "Content-Type: application/json" -X POST "http://localhost:3333/system" | jq
+curl -s localhost:3333/system/peers | jq
 ```
 
-Get network configuration:
+Get node configuration:
 ```
-curl -s -d '{"jsonrpc": "2.0", "method": "networking.get_configuration", "params": [], "id": 1}' -H "Content-Type: application/json" -X POST "http://localhost:3333/system" | jq
+curl -s localhost:3333/system/configuration | jq
+```
+
+
+# Upgrade from node 1.0.6 with the old api to node 1.1.0 with the new core api
+In general, try these instructions on your backup node first to verify that there are no issues.
+
+## Requirements
+First we install Java 17 which the new version requires.
+```
+sudo apt install openjdk-17-jdk
+```
+
+Change user to `radixdlt`.
+```
+sudo su - radixdlt
+```
+
+## Configuration
+Compare the new configuration `https://raw.githubusercontent.com/fpieper/fpstaking/main/docs/config/default.config` with your own and adapt your configuration.
+```
+nano /etc/radixdlt/node/default.config
+```
+You can also refer to the official documentation for more details: https://docs.radixdlt.com/main/node-and-gateway/systemd-install-node.html#_configuration
+
+## Update the node
+Now we can use the old update-node script to update our node to version 1.1.0 which also starts the node with the new version.
+```
+update-node
+```
+
+## Update-node and swich-mode script
+Finally, we update the `update-node` and `switch-mode` script which will work together with the new node version (for future updates).
+```
+curl -Lo /opt/radixdlt/update-node \
+    https://raw.githubusercontent.com/fpieper/fpstaking/main/docs/scripts/update-node && \
+chmod +x /opt/radixdlt/update-node
+```
+```
+curl -Lo /opt/radixdlt/switch-mode \
+    https://raw.githubusercontent.com/fpieper/fpstaking/main/docs/scripts/switch-mode && \
+chmod +x /opt/radixdlt/switch-mode
+```
+
+## Uninstall Java 11
+Switch to your main user again
+```
+exit
+```
+
+Assuming you don't need Java 11 for anything else we can now remove it.
+```
+sudo apt --purge autoremove openjdk-11-jdk
+```
+
+## Grafana Cloud
+You need to add `metrics_path: /prometheus/metrics` to your `grafana-agent.yaml` like described above.
+```
+sudo nano /etc/grafana-agent.yaml
+```
+
+Restart your grafana agent afterwards.
+```
+sudo systemctl restart grafana-agent
 ```

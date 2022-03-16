@@ -687,7 +687,7 @@ Now the data should show up again.
 I will upload an updated dashboard.json after the `missed proposals` metric is supported again.
 
 
-# Failover
+## Failover
 Now switch over validator over from your primary to your backup node with (prepare two SSH sessions that you just need to press enter)
 
 On your primary node:

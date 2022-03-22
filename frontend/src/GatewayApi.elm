@@ -47,8 +47,8 @@ gatewayRequest : { endpoint : String, body : Body, expect : Expect msg } -> Cmd 
 gatewayRequest { endpoint, body, expect } =
     Http.request
         { method = "POST"
-        , headers = [ header "X-Radixdlt-Target-Gw-Api" "1.0.2" ]
-        , url = "https://mainnet.radixdlt.com/" ++ endpoint
+        , headers = [] --[ header "X-Radixdlt-Target-Gw-Api" "1.0.2" ]
+        , url = "https://mainnet.clana.io/" ++ endpoint
         , body = body
         , expect = expect
         , timeout = Nothing

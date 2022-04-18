@@ -199,7 +199,7 @@ sudo reboot
 
 # Radix Node
 We install the Radix node based on the standalone instructions form the documentation
-https://docs.radixdlt.com/main/node/systemd-install-node.html. 
+https://docs.radixdlt.com/main/node-and-gateway/systemd-install-node.html. 
 
 ## Dependencies
 Install the necessary dependencies and initiate randomness to securely generate keys.
@@ -441,7 +441,7 @@ Now you need to logout and login back into the shell to enable the environment v
 
 The radix node-runner cli can afterwards be called with for example:
 ```
-radixnode api health
+radixnode api system health
 ```
 
 For further details checkout the official documentation https://github.com/radixdlt/node-runner.

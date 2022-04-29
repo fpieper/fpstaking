@@ -339,12 +339,12 @@ Please also checkout this article for further details: https://docs.radixdlt.com
 Set java options and the previously used keystore password.
 ```
 cat > /etc/radixdlt/node/secrets-validator/environment << EOF
-JAVA_OPTS="-server -Xms8g -Xmx8g -XX:+HeapDumpOnOutOfMemoryError -XX:+UseCompressedOops -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=jks -Djava.security.egd=file:/dev/urandom -DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector"
+JAVA_OPTS="-server -Xms8g -Xmx8g -XX:+HeapDumpOnOutOfMemoryError -XX:+UseCompressedOops -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=jks -Djava.security.egd=file:/dev/urandom -DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector --enable-preview"
 RADIX_NODE_KEYSTORE_PASSWORD=YOUR_VALIDATOR_PASSWORD
 EOF
 
 cat > /etc/radixdlt/node/secrets-fullnode/environment << EOF
-JAVA_OPTS="-server -Xms8g -Xmx8g -XX:+HeapDumpOnOutOfMemoryError -XX:+UseCompressedOops -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=jks -Djava.security.egd=file:/dev/urandom -DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector"
+JAVA_OPTS="-server -Xms8g -Xmx8g -XX:+HeapDumpOnOutOfMemoryError -XX:+UseCompressedOops -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=jks -Djava.security.egd=file:/dev/urandom -DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector --enable-preview"
 RADIX_NODE_KEYSTORE_PASSWORD=YOUR_FULLNODE_PASSWORD
 EOF
 ```

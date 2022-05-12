@@ -122,7 +122,7 @@ viewFooter =
         , spacing small
         ]
         [ paragraph [ Font.center ] [ text "Radix Staking powered by Florian Pieper Staking" ]
-        , el [ centerX ] <| text "2021"
+        , el [ centerX ] <| text "2022"
         ]
 
 

@@ -199,7 +199,7 @@ sudo reboot
 
 # Radix Node
 We install the Radix node based on the standalone instructions form the documentation
-https://docs.radixdlt.com/main/node/systemd-install-node.html. 
+https://docs.radixdlt.com/main/node-and-gateway/systemd-install-node.html. 
 
 ## Dependencies
 Install the necessary dependencies and initiate randomness to securely generate keys.
@@ -339,12 +339,12 @@ Please also checkout this article for further details: https://docs.radixdlt.com
 Set java options and the previously used keystore password.
 ```
 cat > /etc/radixdlt/node/secrets-validator/environment << EOF
-JAVA_OPTS="-server -Xms8g -Xmx8g -XX:+HeapDumpOnOutOfMemoryError -XX:+UseCompressedOops -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=jks -Djava.security.egd=file:/dev/urandom -DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector"
+JAVA_OPTS="-server -Xms8g -Xmx8g -XX:+HeapDumpOnOutOfMemoryError -XX:+UseCompressedOops -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=jks -Djava.security.egd=file:/dev/urandom -DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector --enable-preview"
 RADIX_NODE_KEYSTORE_PASSWORD=YOUR_VALIDATOR_PASSWORD
 EOF
 
 cat > /etc/radixdlt/node/secrets-fullnode/environment << EOF
-JAVA_OPTS="-server -Xms8g -Xmx8g -XX:+HeapDumpOnOutOfMemoryError -XX:+UseCompressedOops -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=jks -Djava.security.egd=file:/dev/urandom -DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector"
+JAVA_OPTS="-server -Xms8g -Xmx8g -XX:+HeapDumpOnOutOfMemoryError -XX:+UseCompressedOops -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=jks -Djava.security.egd=file:/dev/urandom -DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector --enable-preview"
 RADIX_NODE_KEYSTORE_PASSWORD=YOUR_FULLNODE_PASSWORD
 EOF
 ```
@@ -441,7 +441,7 @@ Now you need to logout and login back into the shell to enable the environment v
 
 The radix node-runner cli can afterwards be called with for example:
 ```
-radixnode api health
+radixnode api system health
 ```
 
 For further details checkout the official documentation https://github.com/radixdlt/node-runner.

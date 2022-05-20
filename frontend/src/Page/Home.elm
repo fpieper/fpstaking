@@ -341,15 +341,21 @@ viewStakingCalculator device model =
             uptimeFactor =
                 ((model.uptime / 100) - 0.98) / 0.02
 
-            stackingRewards =
+            stakingRewardsYearly =
                 (stakingShare / 100) * 300000000 * feeFactor * uptimeFactor
+
+            stakingRewardsMonthly =
+                stakingRewardsYearly / 12
+
+            stakingRewardsDaily =
+                stakingRewardsYearly / 365
 
             apy =
                 if tokensStaked == 0 then
                     0
 
                 else
-                    (stackingRewards / toFloat tokensStaked) * 100
+                    (stakingRewardsYearly / toFloat tokensStaked) * 100
           in
           case model.stakedTokens of
             WalletAddress _ Loading ->
@@ -370,8 +376,14 @@ viewStakingCalculator device model =
                         , { key = text "Staked"
                           , value = el [ alignRight ] <| text <| String.fromInt tokensStaked ++ " XRD"
                           }
-                        , { key = text "Rewards"
-                          , value = el [ alignRight, Font.semiBold ] <| text <| String.fromInt (round stackingRewards) ++ " XRD"
+                        , { key = text "Rewards (yearly)"
+                          , value = el [ alignRight, Font.semiBold ] <| text <| String.fromInt (round stakingRewardsYearly) ++ " XRD"
+                          }
+                        , { key = text "Rewards (monthly)"
+                          , value = el [ alignRight, Font.semiBold ] <| text <| String.fromInt (round stakingRewardsMonthly) ++ " XRD"
+                          }
+                        , { key = text "Rewards (daily)"
+                          , value = el [ alignRight, Font.semiBold ] <| text <| String.fromInt (round stakingRewardsDaily) ++ " XRD"
                           }
                         , { key = text "APY"
                           , value = el [ alignRight, Font.semiBold ] <| text <| formatWithDecimals 2 apy ++ " %"

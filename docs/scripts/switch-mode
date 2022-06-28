@@ -2,17 +2,22 @@
 
 HOST="http://localhost:3333"
 
+NETWORK=${NETWORK:-"mainnet"}
+SECRETS_DIR_ACTIVE=${SECRETS_DIR_ACTIVE:-"/etc/radixdlt/node/secrets"}
+SECRETS_DIR_VALIDATOR=${SECRETS_DIR_VALIDATOR:-"/etc/radixdlt/node/secrets-validator"}
+SECRETS_DIR_FULLNODE=${SECRETS_DIR_FULLNODE:-"/etc/radixdlt/node/secrets-fullnode"}
+
 VALIDATOR_ADDRESS=$(curl -s -X POST "$HOST/key/list" -H "Content-Type: application/json" \
-                    -d '{"network_identifier": {"network": "mainnet"}}' \
+                    -d "{\"network_identifier\": {\"network\": \"$NETWORK\"}}" \
                     | jq -r ".public_keys[0].identifiers.validator_entity_identifier.address")
 IS_VALIDATING=$(curl -s -X POST "$HOST/entity" -H "Content-Type: application/json" \
-                -d "{\"network_identifier\": {\"network\": \"mainnet\"}, \"entity_identifier\":
+                -d "{\"network_identifier\": {\"network\": \"$NETWORK\"}, \"entity_identifier\":
                     {\"address\": \"$VALIDATOR_ADDRESS\", \"sub_entity\": {\"address\": \"system\"}}}" \
                 | jq ".data_objects | any(.type == \"ValidatorBFTData\")")
 
 get_completed_proposals () {
    curl -s -X POST "$HOST/entity" -H "Content-Type: application/json" \
-   -d "{\"network_identifier\": {\"network\": \"mainnet\"}, \"entity_identifier\":
+   -d "{\"network_identifier\": {\"network\": \"$NETWORK\"}, \"entity_identifier\":
       {\"address\": \"$VALIDATOR_ADDRESS\", \"sub_entity\": {\"address\": \"system\"}}}" \
     | jq ".data_objects[] | select(.type == \"ValidatorBFTData\") | .proposals_completed"
 }
@@ -45,8 +50,8 @@ if [[ "$1" == "validator" ]]
 then
     echo "Restarting Radix Node in validator mode ..."
     sudo systemctl stop radixdlt-node && \
-    rm -f /etc/radixdlt/node/secrets && \
-    ln -s /etc/radixdlt/node/secrets-validator /etc/radixdlt/node/secrets && \
+    rm -f ${SECRETS_DIR_ACTIVE} && \
+    ln -s ${SECRETS_DIR_VALIDATOR} ${SECRETS_DIR_ACTIVE} && \
     sudo systemctl start radixdlt-node
     check_return_code
     switch_grafana "fullnode" $1
@@ -55,18 +60,20 @@ then
     if [[ $IS_VALIDATING == true && "$2" != "force" ]]
     then
       PROPOSALS_COMPLETED=$(get_completed_proposals)
+      COUNT=0
       echo "Wait until node completed proposal to minimise risk of a missed proposal ..."
       while (( $(get_completed_proposals) == PROPOSALS_COMPLETED)) || (( $(get_completed_proposals) == 0))
       do
-          echo "Waiting ..."
+          echo "Waited ${COUNT}s..."
+          ((COUNT++))
           sleep 1
       done
       echo "Validator completed proposal - updating now."
     fi
     echo "Restarting Radix Node in fullnode mode ..."
     sudo systemctl stop radixdlt-node && \
-    rm -f /etc/radixdlt/node/secrets && \
-    ln -s /etc/radixdlt/node/secrets-fullnode /etc/radixdlt/node/secrets && \
+    rm -f ${SECRETS_DIR_ACTIVE} && \
+    ln -s ${SECRETS_DIR_FULLNODE} ${SECRETS_DIR_ACTIVE} && \
     sudo systemctl start radixdlt-node
     check_return_code
     switch_grafana "validator" $1

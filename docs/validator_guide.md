@@ -213,7 +213,7 @@ sudo rngd -r /dev/random
 
 ## Create Radix User
 Create a specific user for running the Radix node. The user is created with a locked password
-and can only be switched to via `sudo su - radixdlt`.
+and can only be switched to via `sudo su - radixdlt` (if you have already created this user you can skip this).
 ```
 sudo useradd radixdlt -m -s /bin/bash
 ```
@@ -691,6 +691,13 @@ chmod 500 /etc/radixdlt/node/secrets-fullnode && chmod 400 /etc/radixdlt/node/se
 
 exit
 ```
+
+### Olympia PATH variables
+We need to remove the old PATH for Olympia by doing:
+```
+sudo rm /etc/profile.d/radixdlt.sh
+```
+This will take effect after logout / reboot. Until then better to use the explicit paths for the `switch-mode` and `update-node` script.
 
 ### Apply & verify new config
 Afterwards restart your validator/fullnode with (if you want to be safe against proposal misses use the switch-mode script which waits for an propsal and then safely restarts):

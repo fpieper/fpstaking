@@ -19,7 +19,7 @@
 #     | jq ".data_objects[] | select(.type == \"ValidatorBFTData\") | .proposals_completed"
 # }
 
-IS_VALIDATING = false
+IS_VALIDATING=false
 
 check_return_code () {
     if [[ $? -eq 0 ]]

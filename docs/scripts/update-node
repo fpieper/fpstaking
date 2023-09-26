@@ -19,8 +19,8 @@
 #     | jq ".data_objects[] | select(.type == \"ValidatorBFTData\") | .proposals_completed"
 # }
 
-VALIDATOR_ADDRESS = "validator123"
-IS_VALIDATING = false
+VALIDATOR_ADDRESS="validator123"
+IS_VALIDATING=false
 
 cd /opt/radix-babylon || exit
 

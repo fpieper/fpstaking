@@ -331,7 +331,7 @@ cp /etc/radixdlt/node/secrets-validator/node-keystore.ks /etc/radix-babylon/node
 cp /etc/radixdlt/node/secrets-fullnode/node-keystore.ks /etc/radix-babylon/node/secrets-fullnode/node-keystore.ks
 ```
 
-Don't forget to set the ownership and permissions (and switch user again):
+Don't forget to set the ownership and permissions (and switch user again) - if you have used sudo to copy etc:
 ```
 sudo chown -R radixdlt:radixdlt /etc/radix-babylon/node/secrets-validator/
 sudo chown -R radixdlt:radixdlt /etc/radix-babylon/node/secrets-fullnode/
@@ -390,10 +390,10 @@ For further detail and explanation check out the official documentation
 https://docs-babylon.radixdlt.com/main/node-and-gateway/systemd-install-node.html
 
 
-### Olympia Migration:
+### Olympia Migration
 Get the node address from your olympia node (needs to match the one you are connecting to):
 ```
-curl -s localhost:4333/system/configuration | jq .networking.node_address
+curl -s localhost:4333/system/configuration | jq -r .networking.node_address
 ```
 
 /etc/radix-babylon/node/default.config:
@@ -598,33 +598,27 @@ For further details:
 
 Shows radix node logs with colours:
 ```
-sudo journalctl -f -u radixdlt-node --output=cat
+sudo journalctl -f -u radix-babylon --output=cat
 ```
 
-Shows node health (`BOOTING`, `SYNCING`, `UP`, `STALLED`, `OUT_OF_SYNC`)
+Shows node health (`BOOTING`, `SYNCING`, `UP`, `STALLED`, `OUT_OF_SYNC`, `BOOTING_PRE_GENESIS`)
 ```
-curl -s localhost:3333/system/health | jq
-```
-
-Show node keys information:
-```
-curl -s -X POST localhost:3333/key/list -H "Content-Type: application/json" -d '{"network_identifier": {"network": "mainnet"}}' | jq
+curl -s localhost:3334/system/health | jq
 ```
 
 Shows current validator information:
 ```
-curl -s -X POST localhost:3333/entity -H "Content-Type: application/json"
-    -d '{"network_identifier": {"network": "mainnet"}, "entity_identifier": {"address": "rv.....", "sub_entity": {"address": "system"}}}' | jq
+curl -s localhost:3334/system/identity | jq
 ```
 
 Get network peers:
 ```
-curl -s localhost:3333/system/peers | jq
+curl -s localhost:3334/system/peers | jq
 ```
 
 Get node configuration:
 ```
-curl -s localhost:3333/system/configuration | jq
+curl -s localhost:3334/system/configuration | jq
 ```
 
 

@@ -327,8 +327,8 @@ it will be written in plain text on disk and loaded as environment variable.
 
 If you are migrating from Olympia you already have valid keyfiles here which you can copy:
 ```
-sudo cp /etc/radixdlt-node/node/secrets-validator/node-keystore.ks /etc/radix-babylon/node/secrets-validator/node-keystore.ks
-sudo cp /etc/radixdlt-node/node/secrets-fullnode/node-keystore.ks /etc/radix-babylon/node/secrets-fullnode/node-keystore.ks
+cp /etc/radixdlt/node/secrets-validator/node-keystore.ks /etc/radix-babylon/node/secrets-validator/node-keystore.ks
+cp /etc/radixdlt/node/secrets-fullnode/node-keystore.ks /etc/radix-babylon/node/secrets-fullnode/node-keystore.ks
 ```
 
 Don't forget to set the ownership and permissions (and switch user again):
@@ -348,15 +348,15 @@ Please also checkout this article for further details: https://docs.radixdlt.com
 Set java options, the previously used keystore password and the Rust JNI core lib.
 ```
 cat > /etc/radix-babylon/node/secrets-validator/environment << EOF
-JAVA_OPTS="--enable-preview -server -Xms12g -Xmx12g  -XX:MaxDirectMemorySize=2048m -XX:+HeapDumpOnOutOfMemoryError -XX:+UseCompressedOops -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=jks -Djava.security.egd=file:/dev/urandom -DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector"
-RADIX_NODE_KEYSTORE_PASSWORD=YOUR_VALIDATOR_PASSWORD
+JAVA_OPTS="--enable-preview -server -Xms12g -Xmx12g  -XX:MaxDirectMemorySize=2048m -XX:+HeapDumpOnOutOfMemoryError -XX:+UseCompressedOops -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=jks -Djava.security.egd=file:/dev/urandom -DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector -Djava.library.path=/etc/radix-babylon/node/jni"
 LD_PRELOAD=/etc/radix-babylon/node/jni/libcorerust.so
+RADIX_NODE_KEYSTORE_PASSWORD=YOUR_VALIDATOR_PASSWORD
 EOF
 
 cat > /etc/radix-babylon/node/secrets-fullnode/environment << EOF
-JAVA_OPTS="--enable-preview -server -Xms12g -Xmx12g  -XX:MaxDirectMemorySize=2048m -XX:+HeapDumpOnOutOfMemoryError -XX:+UseCompressedOops -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=jks -Djava.security.egd=file:/dev/urandom -DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector"
-RADIX_NODE_KEYSTORE_PASSWORD=YOUR_FULLNODE_PASSWORD
+JAVA_OPTS="--enable-preview -server -Xms12g -Xmx12g  -XX:MaxDirectMemorySize=2048m -XX:+HeapDumpOnOutOfMemoryError -XX:+UseCompressedOops -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=jks -Djava.security.egd=file:/dev/urandom -DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector -Djava.library.path=/etc/radix-babylon/node/jni"
 LD_PRELOAD=/etc/radix-babylon/node/jni/libcorerust.so
+RADIX_NODE_KEYSTORE_PASSWORD=YOUR_FULLNODE_PASSWORD
 EOF
 ```
 
@@ -393,7 +393,7 @@ https://docs-babylon.radixdlt.com/main/node-and-gateway/systemd-install-node.htm
 ### Olympia Migration:
 Get the node address from your olympia node (needs to match the one you are connecting to):
 ```
-curl -s localhost:3333/system/configuration | jq .networking.node_address
+curl -s localhost:4333/system/configuration | jq .networking.node_address
 ```
 
 /etc/radix-babylon/node/default.config:

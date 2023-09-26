@@ -19,7 +19,7 @@
 #     | jq ".data_objects[] | select(.type == \"ValidatorBFTData\") | .proposals_completed"
 # }
 
-VALIDATOR_ADDRESS="validator123"
+NODE_STATUS=$(curl localhost:3334/system/health | jq -r .status)
 IS_VALIDATING=false
 
 cd /opt/radix-babylon || exit
@@ -104,6 +104,8 @@ then
     exit
 fi
 
+mkdir -p /etc/radix-babylon/node
+
 if [[ $DIR_BIN = $(readlink /etc/radix-babylon/node/bin) && \
       $DIR_LIB = $(readlink /etc/radix-babylon/node/lib) && \
       $DIR_JNI = $(readlink /etc/radix-babylon/node/jni) && \
@@ -117,7 +119,7 @@ echo "Installing new node version" "$NODE_ARCHIVE" "..."
 
 ## INSTALL - node not running
 
-if [[ $VALIDATOR_ADDRESS == "" ]]
+if [[ $NODE_STATUS == "" ]]
 then
     if
         rm -f /etc/radix-babylon/node/bin && \

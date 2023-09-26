@@ -19,7 +19,7 @@
 #     | jq ".data_objects[] | select(.type == \"ValidatorBFTData\") | .proposals_completed"
 # }
 
-NODE_STATUS=$(curl localhost:3334/system/health | jq -r .status)
+NODE_STATUS=$(curl -s localhost:3334/system/health | jq -r .status)
 IS_VALIDATING=false
 
 cd /opt/radix-babylon || exit

@@ -8,14 +8,20 @@ After=systemd-journald-dev-log.socket
 Wants=network-online.target
 
 [Service]
-EnvironmentFile=/etc/radixdlt/node/secrets/environment
-
+EnvironmentFile=/etc/radix-babylon/node/secrets/environment
 User=radixdlt
-WorkingDirectory=/etc/radixdlt/node
-ExecStart=/etc/radixdlt/node/bin/radixdlt
+LimitNOFILE=65536
+LimitNPROC=65536
+LimitMEMLOCK=infinity
+WorkingDirectory=/etc/radix-babylon/node
+ExecStart=/etc/radix-babylon/node/bin/core
 SuccessExitStatus=143
 TimeoutStopSec=10
 Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target
+
+
+# JAVA_OPTS="-Djava.library.path=$PWD" LD_PRELOAD="$PWD/libcorerust.so" \
+# ./core-rcnet-v3.1-r1/bin/core -config=default.config

@@ -1,21 +1,25 @@
 #!/bin/bash
 
-HOST="http://localhost:3333"
+# VALIDATOR CHECKS WILL BE UPDATED AFTER MIGRATION
+# 
+# HOST="http://localhost:3333"
+# 
+# VALIDATOR_ADDRESS=$(curl -s -X POST "$HOST/key/list" -H "Content-Type: application/json" \
+#                     -d '{"network_identifier": {"network": "mainnet"}}' \
+#                     | jq -r ".public_keys[0].identifiers.validator_entity_identifier.address")
+# IS_VALIDATING=$(curl -s -X POST "$HOST/entity" -H "Content-Type: application/json" \
+#                 -d "{\"network_identifier\": {\"network\": \"mainnet\"}, \"entity_identifier\":
+#                     {\"address\": \"$VALIDATOR_ADDRESS\", \"sub_entity\": {\"address\": \"system\"}}}" \
+#                 | jq ".data_objects | any(.type == \"ValidatorBFTData\")")
+#
+# get_completed_proposals () {
+#    curl -s -X POST "$HOST/entity" -H "Content-Type: application/json" \
+#    -d "{\"network_identifier\": {\"network\": \"mainnet\"}, \"entity_identifier\":
+#       {\"address\": \"$VALIDATOR_ADDRESS\", \"sub_entity\": {\"address\": \"system\"}}}" \
+#     | jq ".data_objects[] | select(.type == \"ValidatorBFTData\") | .proposals_completed"
+# }
 
-VALIDATOR_ADDRESS=$(curl -s -X POST "$HOST/key/list" -H "Content-Type: application/json" \
-                    -d '{"network_identifier": {"network": "mainnet"}}' \
-                    | jq -r ".public_keys[0].identifiers.validator_entity_identifier.address")
-IS_VALIDATING=$(curl -s -X POST "$HOST/entity" -H "Content-Type: application/json" \
-                -d "{\"network_identifier\": {\"network\": \"mainnet\"}, \"entity_identifier\":
-                    {\"address\": \"$VALIDATOR_ADDRESS\", \"sub_entity\": {\"address\": \"system\"}}}" \
-                | jq ".data_objects | any(.type == \"ValidatorBFTData\")")
-
-get_completed_proposals () {
-   curl -s -X POST "$HOST/entity" -H "Content-Type: application/json" \
-   -d "{\"network_identifier\": {\"network\": \"mainnet\"}, \"entity_identifier\":
-      {\"address\": \"$VALIDATOR_ADDRESS\", \"sub_entity\": {\"address\": \"system\"}}}" \
-    | jq ".data_objects[] | select(.type == \"ValidatorBFTData\") | .proposals_completed"
-}
+IS_VALIDATING = false
 
 check_return_code () {
     if [[ $? -eq 0 ]]
@@ -44,10 +48,10 @@ switch_grafana () {
 if [[ "$1" == "validator" ]]
 then
     echo "Restarting Radix Node in validator mode ..."
-    sudo systemctl stop radixdlt-node && \
-    rm -f /etc/radixdlt/node/secrets && \
-    ln -s /etc/radixdlt/node/secrets-validator /etc/radixdlt/node/secrets && \
-    sudo systemctl start radixdlt-node
+    sudo systemctl stop radix-babylon && \
+    rm -f /etc/radix-babylon/node/secrets && \
+    ln -s /etc/radix-babylon/node/secrets-validator /etc/radix-babylon/node/secrets && \
+    sudo systemctl start radix-babylon
     check_return_code
     switch_grafana "fullnode" $1
 elif [[ "$1" == "fullnode" ]]
@@ -64,10 +68,10 @@ then
       echo "Validator completed proposal - updating now."
     fi
     echo "Restarting Radix Node in fullnode mode ..."
-    sudo systemctl stop radixdlt-node && \
-    rm -f /etc/radixdlt/node/secrets && \
-    ln -s /etc/radixdlt/node/secrets-fullnode /etc/radixdlt/node/secrets && \
-    sudo systemctl start radixdlt-node
+    sudo systemctl stop radix-babylon && \
+    rm -f /etc/radix-babylon/node/secrets && \
+    ln -s /etc/radix-babylon/node/secrets-fullnode /etc/radix-babylon/node/secrets && \
+    sudo systemctl start radix-babylon
     check_return_code
     switch_grafana "validator" $1
 else

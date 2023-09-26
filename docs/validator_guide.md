@@ -1,7 +1,7 @@
 # Production-grade Standalone Validator Guide
 
 This guide presents a straightforward and focused guide to set up a production grade validator node.
-It won't discuss all possible ways to set up a standalone node. The guide is tested and based on Ubuntu 20.04.
+It won't discuss all possible ways to set up a standalone node. The guide is tested and based on Ubuntu 22.04.
 
 This is work in progress and some parts may change with the upcoming node releases.
 
@@ -141,6 +141,9 @@ https://linoxide.com/enable-automatic-updates-on-ubuntu-20-04/.
 
 
 ## Kernel live patching
+```
+Disclaimer: the kernel live patching section was tested on Ubuntu 20.04 and might need to be slightly adapted.
+```
 We will use `canonical-livepatch` for kernel live patching.
 First we need to check whether you are running the `linux-generic` kernel
 (or any of these `generic, lowlatency, aws, azure, oem, gcp, gke, gkeop`
@@ -197,7 +200,7 @@ sudo mount -a
 sudo reboot
 ```
 
-# Radix Node
+# <a name="radixnode"></a>Radix Node
 We install the Radix node based on the standalone instructions form the documentation
 https://docs.radixdlt.com/main/node-and-gateway/systemd-install-node.html. 
 
@@ -218,20 +221,20 @@ sudo useradd radixdlt -m -s /bin/bash
 ## Service Control
 Allow radix user to control the radix node service.
 ```
-sudo sh -c 'cat > /etc/sudoers.d/radixdlt << EOF
-radixdlt ALL= NOPASSWD: /bin/systemctl enable radixdlt-node.service
-radixdlt ALL= NOPASSWD: /bin/systemctl restart radixdlt-node.service
-radixdlt ALL= NOPASSWD: /bin/systemctl stop radixdlt-node.service
-radixdlt ALL= NOPASSWD: /bin/systemctl start radixdlt-node.service
-radixdlt ALL= NOPASSWD: /bin/systemctl reload radixdlt-node.service
-radixdlt ALL= NOPASSWD: /bin/systemctl status radixdlt-node.service
-radixdlt ALL= NOPASSWD: /bin/systemctl enable radixdlt-node
-radixdlt ALL= NOPASSWD: /bin/systemctl restart radixdlt-node
-radixdlt ALL= NOPASSWD: /bin/systemctl stop radixdlt-node
-radixdlt ALL= NOPASSWD: /bin/systemctl start radixdlt-node
-radixdlt ALL= NOPASSWD: /bin/systemctl reload radixdlt-node
-radixdlt ALL= NOPASSWD: /bin/systemctl status radixdlt-node
-radixdlt ALL= NOPASSWD: /bin/systemctl status radixdlt-node
+sudo sh -c 'cat > /etc/sudoers.d/radix-babylon << EOF
+radixdlt ALL= NOPASSWD: /bin/systemctl enable radix-babylon.service
+radixdlt ALL= NOPASSWD: /bin/systemctl restart radix-babylon.service
+radixdlt ALL= NOPASSWD: /bin/systemctl stop radix-babylon.service
+radixdlt ALL= NOPASSWD: /bin/systemctl start radix-babylon.service
+radixdlt ALL= NOPASSWD: /bin/systemctl reload radix-babylon.service
+radixdlt ALL= NOPASSWD: /bin/systemctl status radix-babylon.service
+radixdlt ALL= NOPASSWD: /bin/systemctl enable radix-babylon
+radixdlt ALL= NOPASSWD: /bin/systemctl restart radix-babylon
+radixdlt ALL= NOPASSWD: /bin/systemctl stop radix-babylon
+radixdlt ALL= NOPASSWD: /bin/systemctl start radix-babylon
+radixdlt ALL= NOPASSWD: /bin/systemctl reload radix-babylon
+radixdlt ALL= NOPASSWD: /bin/systemctl status radix-babylon
+radixdlt ALL= NOPASSWD: /bin/systemctl status radix-babylon
 radixdlt ALL= NOPASSWD: /bin/systemctl restart grafana-agent
 radixdlt ALL= NOPASSWD: /bin/sed -i s/fullnode/validator/g /etc/grafana-agent.yaml
 radixdlt ALL= NOPASSWD: /bin/sed -i s/validator/fullnode/g /etc/grafana-agent.yaml
@@ -242,30 +245,30 @@ EOF'
 ## Systemd Service
 Create the radixdlt-node service:
 ```
-sudo curl -Lo /etc/systemd/system/radixdlt-node.service \
-    https://raw.githubusercontent.com/fpieper/fpstaking/main/docs/config/radixdlt-node.service
+sudo curl -Lo /etc/systemd/system/radix-babylon.service \
+    https://raw.githubusercontent.com/fpieper/fpstaking/main/docs/config/radix-babylon.service
 ```
 
 Also we enable the service at boot:
 ```
-sudo systemctl enable radixdlt-node
+sudo systemctl enable radix-babylon
 ```
 
 ## Create config and data directories
 We create the necessary directories and set the ownership:
 ```
-sudo mkdir /etc/radixdlt/
-sudo chown radixdlt:radixdlt -R /etc/radixdlt
-sudo mkdir /data
-sudo chown radixdlt:radixdlt /data
-sudo mkdir -p /opt/radixdlt/releases
-sudo chown -R radixdlt:radixdlt /opt/radixdlt
+sudo mkdir /etc/radix-babylon/
+sudo chown radixdlt:radixdlt -R /etc/radix-babylon
+sudo mkdir /babylon-ledger
+sudo chown radixdlt:radixdlt /babylon-ledger
+sudo mkdir -p /opt/radix-babylon/releases
+sudo chown -R radixdlt:radixdlt /opt/radix-babylon
 ```
 
-Add `/opt/radixdlt` to `PATH`:
+Add `/opt/radix-babylon` to `PATH`:
 ```
-sudo sh -c 'cat > /etc/profile.d/radixdlt.sh << EOF
-PATH=$PATH:/opt/radixdlt
+sudo sh -c 'cat > /etc/profile.d/radix-babylon.sh << EOF
+PATH=$PATH:/opt/radix-babylon
 EOF'
 ```
 
@@ -276,13 +279,13 @@ sudo su - radixdlt
 ```
 
 I developed a seamless install and update script which downloads the last release
-from `https://github.com/radixdlt/radixdlt/releases` and waits until one proposal was made to
+from `https://github.com/radixdlt/babylon-node/releases` and waits until one proposal was made to
 restart the node to minimise the downtime.
 If the interval between proposals is higher than around 5 seconds then there will be zero missed proposals:
 ```
-curl -Lo /opt/radixdlt/update-node \
+curl -Lo /opt/radix-babylon/update-node \
     https://raw.githubusercontent.com/fpieper/fpstaking/main/docs/scripts/update-node && \
-chmod +x /opt/radixdlt/update-node
+chmod +x /opt/radix-babylon/update-node
 ```
 
 Installs or updates the radix node with the latest available version.
@@ -297,24 +300,24 @@ update-node force
 
 Change directory for following steps.
 ```
-cd /etc/radixdlt/node
+cd /etc/radix-babylon/node
 ```
 
 ## Secrets
 Create secrets directories (one for validator and one for full node mode)
 ```
-mkdir /etc/radixdlt/node/secrets-validator
-mkdir /etc/radixdlt/node/secrets-fullnode
+mkdir /etc/radix-babylon/node/secrets-validator
+mkdir /etc/radix-babylon/node/secrets-fullnode
 ```
 
 ### Key Copy or Generation
 The idea is to have two folders with configurations for a validator and a fullnode setting with different keys.
-`/etc/radixdlt/node/secrets-validator` contains the configuration for a validator.
-`/etc/radixdlt/node/secrets-fullnode` contains the configuration for a fullnode.
+`/etc/radix-babylon/node/secrets-validator` contains the configuration for a validator.
+`/etc/radix-babylon/node/secrets-fullnode` contains the configuration for a fullnode.
 We will later to be able to switch between being a validator or fullnode.
 This is useful for failover scenarios.
 
-Either copy your already existing keyfiles `node-keystore.ks` to `/etc/radixdlt/node/secrets-validator` or `/etc/radixdlt/node/secrets-fullnode` or create a new keys.
+Either copy your already existing keyfiles `node-keystore.ks` to `/etc/radix-babylon/node/secrets-validator` or `/etc/radix-babylon/node/secrets-fullnode` or create a new keys.
 Use a password generator of your choice to generate a secure password, don't use your regular one because
 it will be written in plain text on disk and loaded as environment variable.
 ```
@@ -322,12 +325,18 @@ it will be written in plain text on disk and loaded as environment variable.
 ./bin/keygen --keystore=secrets-fullnode/node-keystore.ks --password=YOUR_FULLNODE_PASSWORD
 ```
 
+If you are migrating from Olympia you already have valid keyfiles here which you can copy:
+```
+sudo cp /etc/radixdlt-node/node/secrets-validator/node-keystore.ks /etc/radix-babylon/node/secrets-validator/node-keystore.ks
+sudo cp /etc/radixdlt-node/node/secrets-fullnode/node-keystore.ks /etc/radix-babylon/node/secrets-fullnode/node-keystore.ks
+```
+
 Don't forget to set the ownership and permissions (and switch user again):
 ```
-sudo chown -R radixdlt:radixdlt /etc/radixdlt/node/secrets-validator/
-sudo chown -R radixdlt:radixdlt /etc/radixdlt/node/secrets-fullnode/
+sudo chown -R radixdlt:radixdlt /etc/radix-babylon/node/secrets-validator/
+sudo chown -R radixdlt:radixdlt /etc/radix-babylon/node/secrets-fullnode/
 sudo su - radixdlt
-cd /etc/radixdlt/node
+cd /etc/radix-babylon/node
 ```
 
 To achieve high uptime, it is important to also have a backup node for maintenance or failover.
@@ -336,25 +345,27 @@ Your main and backup node will have the same validator key (node-keystore.ks), b
 Please also checkout this article for further details: https://docs.radixdlt.com/main/node-and-gateway/maintaining-uptime.html.
 
 ### Environment file
-Set java options and the previously used keystore password.
+Set java options, the previously used keystore password and the Rust JNI core lib.
 ```
-cat > /etc/radixdlt/node/secrets-validator/environment << EOF
-JAVA_OPTS="-server -Xms8g -Xmx8g -XX:+HeapDumpOnOutOfMemoryError -XX:+UseCompressedOops -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=jks -Djava.security.egd=file:/dev/urandom -DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector --enable-preview"
+cat > /etc/radix-babylon/node/secrets-validator/environment << EOF
+JAVA_OPTS="--enable-preview -server -Xms12g -Xmx12g  -XX:MaxDirectMemorySize=2048m -XX:+HeapDumpOnOutOfMemoryError -XX:+UseCompressedOops -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=jks -Djava.security.egd=file:/dev/urandom -DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector"
 RADIX_NODE_KEYSTORE_PASSWORD=YOUR_VALIDATOR_PASSWORD
+LD_PRELOAD=/etc/radix-babylon/node/jni/libcorerust.so
 EOF
 
-cat > /etc/radixdlt/node/secrets-fullnode/environment << EOF
-JAVA_OPTS="-server -Xms8g -Xmx8g -XX:+HeapDumpOnOutOfMemoryError -XX:+UseCompressedOops -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=jks -Djava.security.egd=file:/dev/urandom -DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector --enable-preview"
+cat > /etc/radix-babylon/node/secrets-fullnode/environment << EOF
+JAVA_OPTS="--enable-preview -server -Xms12g -Xmx12g  -XX:MaxDirectMemorySize=2048m -XX:+HeapDumpOnOutOfMemoryError -XX:+UseCompressedOops -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=jks -Djava.security.egd=file:/dev/urandom -DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector"
 RADIX_NODE_KEYSTORE_PASSWORD=YOUR_FULLNODE_PASSWORD
+LD_PRELOAD=/etc/radix-babylon/node/jni/libcorerust.so
 EOF
 ```
 
 ### Restrict Access To Secrets
 ```
-chown -R radixdlt:radixdlt /etc/radixdlt/node/secrets-validator
-chown -R radixdlt:radixdlt /etc/radixdlt/node/secrets-fullnode
-chmod 500 /etc/radixdlt/node/secrets-validator && chmod 400 /etc/radixdlt/node/secrets-validator/*
-chmod 500 /etc/radixdlt/node/secrets-fullnode && chmod 400  /etc/radixdlt/node/secrets-fullnode/*
+chown -R radixdlt:radixdlt /etc/radix-babylon/node/secrets-validator
+chown -R radixdlt:radixdlt /etc/radix-babylon/node/secrets-fullnode
+chmod 500 /etc/radix-babylon/node/secrets-validator && chmod 400 /etc/radix-babylon/node/secrets-validator/*
+chmod 500 /etc/radix-babylon/node/secrets-fullnode && chmod 400  /etc/radix-babylon/node/secrets-fullnode/*
 ```
 
 ## Node Configuration
@@ -363,24 +374,32 @@ Especially, set the `network.host_ip` to your own IP (`curl ifconfig.me`) and
 bind both apis to localhost `127.0.0.1`.
 
 ```
-curl -Lo /etc/radixdlt/node/default.config \
+curl -Lo /etc/radix-babylon/node/default.config \
     https://raw.githubusercontent.com/fpieper/fpstaking/main/docs/config/default.config
-nano /etc/radixdlt/node/default.config
+nano /etc/radix-babylon/node/default.config
 ```
-
-Setting `api.archive.enable=true` enables archive mode otherwise the node is running as full node.
-Then you may also want to enable the construction endpoint with `api.construction.enable=true`.
 
 You also may want set a `seed_node` from another region instead of the one from the `EU` above.
 
-If you want to run on stokenet (testnet) instead of mainnet, you can set `network.id=2` and use this seed node: 
+If you want to run on stokenet (testnet) instead of mainnet, you can set `network.id=2` and use this seed nodes: 
 ```
-radix://tn1qt9kqzzqyj27zv4n67f2jrzgd24hsxfwe8d4kw9j4msze7rpdg3guvk07jy@54.76.86.46:30000
+radix://node_tdx_2_1qv89yg0la2jt429vqp8sxtpg95hj637gards67gpgqy2vuvwe4s5ss0va2y@13.126.248.88,radix://node_tdx_2_1qvtd9ffdhxyg7meqggr2ezsdfgjre5aqs6jwk5amdhjg86xhurgn5c79t9t@13.210.209.103,radix://node_tdx_2_1qwfh2nn0zx8cut5fqfz6n7pau2f7vdyl89mypldnn4fwlhaeg2tvunp8s8h@54.229.126.97,radix://node_tdx_2_1qwz237kqdpct5l3yjhmna66uxja2ymrf3x6hh528ng3gtvnwndtn5rsrad4@3.210.187.161
 ```
 
 For further detail and explanation check out the official documentation
-https://docs.radixdlt.com/main/node-and-gateway/systemd-install-node.html#_configuration
+https://docs-babylon.radixdlt.com/main/node-and-gateway/systemd-install-node.html
 
+
+### Olympia Migration:
+Get the node address from your olympia node (needs to match the one you are connecting to):
+```
+curl -s localhost:3333/system/configuration | jq .networking.node_address
+```
+
+/etc/radix-babylon/node/default.config:
+```
+genesis.olympia.node_bech32_address=rn1q....
+```
 
 ## Failover
 
@@ -388,14 +407,14 @@ Until now the service the Radix node does not find the secrets (environment and 
 Depending on whether we want to run the node in validator or full node mode we create a symbolic link 
 to the corresponding directory. For example to run in validator mode:
 ```
-/etc/radixdlt/node/secrets -> /etc/radixdlt/node/secrets-validator 
+/etc/radix-babylon/node/secrets -> /etc/radix-babylon/node/secrets-validator 
 ```
 
 To streamline this process of promoting in case of a failover from our primary node, I wrote a small script:
 ```
-curl -Lo /opt/radixdlt/switch-mode \
+curl -Lo /opt/radix-babylon/switch-mode \
     https://raw.githubusercontent.com/fpieper/fpstaking/main/docs/scripts/switch-mode && \
-chmod +x /opt/radixdlt/switch-mode
+chmod +x /opt/radix-babylon/switch-mode
 ```
 
 To switch the mode simply pass the mode as first argument. Possible modes are: `validator` and `fullnode`
@@ -421,12 +440,14 @@ Switching to fullnode waits for the next made proposal still in validator mode
 and stops immediately afterwards to minimise downtime (or specifically the missed proposals)  
 
 For maintenance failover just open SSH connections to both of your servers side-by-side.
-1. Switch to fullnode mode on your validator: `/opt/radixdlt/switch-mode.sh fullnode` 
+1. Switch to fullnode mode on your validator: `/opt/radix-babylon/switch-mode.sh fullnode` 
 2. Wait until switching mode was successful
-3. Immediately switch to validator mode on your backup node: `/opt/radixdlt/switch-mode.sh validator`
+3. Immediately switch to validator mode on your backup node: `/opt/radix-babylon/switch-mode.sh validator`
 
 ## Node-Runner CLI
-
+```
+This section is currently outdated and refers to the Olympia nodes.
+```
 The node-runner cli was already installed by the `update-node` script.
 We only just need to fit the following environment variables to our setup: 
 ```
@@ -456,22 +477,12 @@ First of all we make sure that our node is running in `validator mode` to regist
 switch-mode validator
 ```
 
-To register as validator please refer to the official documentation https://docs.radixdlt.com/main/node-and-gateway/systemd-register-as-validator.html.
-Since our setup is a bit different and simpler (without Nginx, because it is not needed for a validator) we need to use a different curl command.
-
-Instead of e.g.:
-```
-curl -k -u admin:{nginx-admin-password} -X POST 'https://localhost/entity' --header 'Content-Type: application/json' -d '{...}'
-```
-
-Use:
-```
-curl -s -X POST 'http://localhost:3333/entity' -H 'Content-Type: application/json' -d '{...}'
-```
-`--data-raw` / `-d` and `--header` / `-H` are synonyms. `-s` is optional and means the request progress is silent / hidden.
-
+To register as validator please refer to the official documentation https://docs-babylon.radixdlt.com/main/node-and-gateway/register-as-validator.html Keep in mind to adapt the local port in `curl` commands if necessary.
 
 # Monitoring with Grafana Cloud
+```
+This section is currently outdated and refers to the Olympia nodes.
+```
 I can recommend watching this comprehensive introduction to Grafana Cloud
 https://grafana.com/go/webinar/intro-to-prometheus-and-grafana/.
 First, sign up for a Grafana Cloud free account and follow their quickstart introductions to install
@@ -617,92 +628,86 @@ curl -s localhost:3333/system/configuration | jq
 ```
 
 
-# Upgrade from node 1.0.6 with the old api to node 1.1.0 with the new core api
-In general, try these instructions on your backup node first to verify that there are no issues.
+# Babylon Migration
+To simplify the upgrade process we are going to run the migration in parallel to your current Olympia nodes.
+This requires however to have enough memory (32GB should be enough, 4 CPU cores should work (untested) but would recommend 8 to be on the safe side).
 
-## Requirements
-First we install Java 17 which the new version requires.
-```
-sudo apt install openjdk-17-jdk
-```
+## Preparations
+Upgrade both nodes to Ubuntu 22.04 and node version 1.5.0 (if you didn't do that already). For details to upgrade the operating system see e.g.: https://jumpcloud.com/blog/how-to-upgrade-ubuntu-20-04-to-ubuntu-22-04
 
-Change user to `radixdlt`.
-```
-sudo su - radixdlt
-```
+1. first upgrade your backup node (you can either update Ubuntu or the node first). The node can be updated as always using:
+  `update-node`
+2. switch your validator to the backup
+3. upgrade your other node (currently the full node - also Ubuntu and Radix node)
 
-## Configuration
-Compare the new configuration https://raw.githubusercontent.com/fpieper/fpstaking/main/docs/config/default.config with your own and adapt your configuration.
-```
-nano /etc/radixdlt/node/default.config
-```
-You can also refer to the official documentation for more details: https://docs.radixdlt.com/main/node-and-gateway/systemd-install-node.html#_configuration
+## Olympia Node Configuration Change
 
-## Update the node
-Now we can use the old update-node script to update our node to version 1.1.0 which also starts the node with the new version.
+### Bind Olympia End State endpoint to localhost
+
+In your `/etc/radixdlt/node/default.config` add this line (if you are using an Olympia node on another server do not add this line or set `0.0.0.0`):
 ```
-update-node
+api.end-state.bind.address=127.0.0.1
 ```
 
-## Update-node and swich-mode script
-Finally, we update the `update-node` and `switch-mode` script which will work together with the new node version (for future updates).
+### Change network listen port
+To be able to run both nodes in parallel we set the Olympia listen port to `30001`:
 ```
-curl -Lo /opt/radixdlt/update-node \
-    https://raw.githubusercontent.com/fpieper/fpstaking/main/docs/scripts/update-node && \
-chmod +x /opt/radixdlt/update-node
-```
-```
-curl -Lo /opt/radixdlt/switch-mode \
-    https://raw.githubusercontent.com/fpieper/fpstaking/main/docs/scripts/switch-mode && \
-chmod +x /opt/radixdlt/switch-mode
+sudo ufw allow 30001/tcp
+sudo ufw reload
+sudo ufw status
+sudo nano /etc/radixdlt/node/default.config
 ```
 
-## Uninstall Java 11
-Switch to your main user again
+/etc/radixdlt/node/default.config:
 ```
+api.port=4333
+network.p2p.listen_port=30001
+```
+
+After successful Babylon migration you can remove this firewall rule again with:
+```
+sudo ufw delete allow 30001/tcp
+sudo ufw reload
+sudo ufw status
+```
+
+### Increase assigned memory
+In `/etc/radixdlt/node/secrets-validator/environment` and `/etc/radixdlt/node/secrets-fullnode/environment` (both nodes) change the memory settings:
+```
+JAVA_OPTS="... -Xms12g -Xmx12g ..."
+```
+
+You probably need to also adjust the permissions:
+```
+sudo chmod +w /etc/radixdlt/node/secrets-validator/environment
+sudo chmod +w /etc/radixdlt/node/secrets-fullnode/environment
+
+sudo nano /etc/radixdlt/node/secrets-validator/environment
+sudo nano /etc/radixdlt/node/secrets-fullnode/environment
+
+sudo su radixdlt
+chmod 500 /etc/radixdlt/node/secrets-validator && chmod 400 /etc/radixdlt/node/secrets-validator/*
+chmod 500 /etc/radixdlt/node/secrets-fullnode && chmod 400 /etc/radixdlt/node/secrets-fullnode/*
+
 exit
 ```
 
-Assuming you don't need Java 11 for anything else we can now remove it.
+### Apply & verify new config
+Afterwards restart your validator/fullnode with (if you want to be safe against proposal misses use the switch-mode script which waits for an propsal and then safely restarts):
 ```
-sudo apt --purge autoremove openjdk-11-jdk
-```
-
-## Grafana Cloud
-You need to add `metrics_path: /prometheus/metrics` to your `grafana-agent.yaml` like
-described in the section `Extending Grafana Agent Config` above.
-```
-sudo nano /etc/grafana-agent.yaml
+sudo systemctl restart radixdlt-node
 ```
 
-Restart your grafana agent afterwards.
+Verify afterwards that the endpoint is working with (it is a ):
 ```
-sudo systemctl restart grafana-agent
-```
-
-## Grafana Dashboard
-The `info_counters_bft_proposals_made` metric was renamed to `info_counters_bft_pacemaker_proposals_sent`.
-In the Radix dashboard on Grafana Cloud edit the panel "Proposals Made", rename the metric and save.
-Now the data should show up again.
-I will upload an updated dashboard.json after the `missed proposals` metric is supported again.
-
-
-## Failover
-Now switch over validator over from your primary to your backup node with (prepare two SSH sessions that you just need to press enter)
-
-On your primary node:
-```
-sudo su - radixdlt
-switch-mode fullnode
+john@radixnode:~$ curl localhost:3400/olympia-end-state
+Invalid method, path exists for GET /olympia-end-state
 ```
 
-After the script has finished directly active validator mode on your (updated) backup node
+## Install Babylon
+The [Radix Node](#radix-node) section is updated to Babylon and will install the Babylon node in parallel to the Olympia node.
+Best to install it first on your backup node to see if everything works fine and then on your current validator.
+If you feel more comfortable you can also switch validators for that process (and always installing on the backup node).
 
-On your backup node:
-```
-sudo su - radixdlt
-switch-mode validator
-```
-
-Now repeat all the upgrade steps on your old primary node (which is still running the old version) and 
-can be your new backup node or you switch modes again after you are done.
+## Take your front seats
+Babylon is a huge milestone for Radix - take a seat and enjoy your front seats in the migration ;)

@@ -1,27 +1,32 @@
 #!/bin/bash
 
-HOST="http://localhost:3333"
+# VALIDATOR CHECKS WILL BE UPDATED AFTER MIGRATION
+# 
+# HOST="http://localhost:3333"
+# 
+# VALIDATOR_ADDRESS=$(curl -s -X POST "$HOST/key/list" -H "Content-Type: application/json" \
+#                     -d '{"network_identifier": {"network": "mainnet"}}' \
+#                     | jq -r ".public_keys[0].identifiers.validator_entity_identifier.address")
+# IS_VALIDATING=$(curl -s -X POST "$HOST/entity" -H "Content-Type: application/json" \
+#                 -d "{\"network_identifier\": {\"network\": \"mainnet\"}, \"entity_identifier\":
+#                     {\"address\": \"$VALIDATOR_ADDRESS\", \"sub_entity\": {\"address\": \"system\"}}}" \
+#                 | jq ".data_objects | any(.type == \"ValidatorBFTData\")")
+#
+# get_completed_proposals () {
+#    curl -s -X POST "$HOST/entity" -H "Content-Type: application/json" \
+#    -d "{\"network_identifier\": {\"network\": \"mainnet\"}, \"entity_identifier\":
+#       {\"address\": \"$VALIDATOR_ADDRESS\", \"sub_entity\": {\"address\": \"system\"}}}" \
+#     | jq ".data_objects[] | select(.type == \"ValidatorBFTData\") | .proposals_completed"
+# }
 
-VALIDATOR_ADDRESS=$(curl -s -X POST "$HOST/key/list" -H "Content-Type: application/json" \
-                    -d '{"network_identifier": {"network": "mainnet"}}' \
-                    | jq -r ".public_keys[0].identifiers.validator_entity_identifier.address")
-IS_VALIDATING=$(curl -s -X POST "$HOST/entity" -H "Content-Type: application/json" \
-                -d "{\"network_identifier\": {\"network\": \"mainnet\"}, \"entity_identifier\":
-                    {\"address\": \"$VALIDATOR_ADDRESS\", \"sub_entity\": {\"address\": \"system\"}}}" \
-                | jq ".data_objects | any(.type == \"ValidatorBFTData\")")
+VALIDATOR_ADDRESS = "validator123"
+IS_VALIDATING = false
 
-get_completed_proposals () {
-   curl -s -X POST "$HOST/entity" -H "Content-Type: application/json" \
-   -d "{\"network_identifier\": {\"network\": \"mainnet\"}, \"entity_identifier\":
-      {\"address\": \"$VALIDATOR_ADDRESS\", \"sub_entity\": {\"address\": \"system\"}}}" \
-    | jq ".data_objects[] | select(.type == \"ValidatorBFTData\") | .proposals_completed"
-}
-
-cd /opt/radixdlt || exit
+cd /opt/radix-babylon || exit
 
 echo "Checking for latest radix node-runner version ..."
-NODE_RUNNER_URL=$(curl -s https://api.github.com/repos/radixdlt/node-runner/releases/latest | \
-           jq -r '.assets[] | select(.browser_download_url|split("/")|last|test("^radixnode-ubuntu-20.04")) | .browser_download_url')
+NODE_RUNNER_URL=$(curl -s https://api.github.com/repos/radixdlt/babylon-nodecli/releases/latest | \
+           jq -r '.assets[] | select(.browser_download_url|split("/")|last|test("^babylonnode-ubuntu-22.04")) | .browser_download_url')
 echo "Found node-runner url:" "$NODE_RUNNER_URL"
 NODE_RUNNER_FILE="$(basename "$NODE_RUNNER_URL")-$(echo "$NODE_RUNNER_URL" | awk -F/ '{print $(NF-1)}')"
 echo "Latest node-runner version: " "$NODE_RUNNER_FILE"
@@ -32,16 +37,16 @@ then
     curl -Lo "$NODE_RUNNER_FILE" "$NODE_RUNNER_URL" && \
     chmod +x "$NODE_RUNNER_FILE" && \
     rm -f "radixnode" && \
-    ln -s "/opt/radixdlt/$NODE_RUNNER_FILE" radixnode
+    ln -s "/opt/radix-babylon/$NODE_RUNNER_FILE" radixnode
 else
     echo "Radix node-runner already up to date."
 fi
 
-cd /opt/radixdlt/releases || exit
+cd /opt/radix-babylon/releases || exit
 
 echo "Checking for latest radix node version ..."
-NODE_URL=$(curl -s https://api.github.com/repos/radixdlt/radixdlt/releases/latest | \
-           jq -r '.assets[] | select(.browser_download_url|split("/")|last|test("^radixdlt-dist-[0-9.]*zip")) | .browser_download_url')
+NODE_URL=$(curl -s https://api.github.com/repos/radixdlt/babylon-node/releases/latest | \
+           jq -r '.assets[] | select(.browser_download_url|split("/")|last|test("^babylon-node-v[0-9.]*zip")) | .browser_download_url')
 echo "Found radix node url:" "$NODE_URL"
 NODE_ARCHIVE=$(basename "$NODE_URL")
 
@@ -67,18 +72,46 @@ then
     exit
 fi
 
-DIR_BIN=/opt/radixdlt/releases/${NODE_EXTRACTED}bin
-DIR_LIB=/opt/radixdlt/releases/${NODE_EXTRACTED}lib
+DIR_BIN=/opt/radix-babylon/releases/${NODE_EXTRACTED}bin
+DIR_LIB=/opt/radix-babylon/releases/${NODE_EXTRACTED}lib
+DIR_JNI=/opt/radix-babylon/releases/${NODE_EXTRACTED}jni
 
-if [[ $DIR_BIN = $(readlink /etc/radixdlt/node/bin) && \
-      $DIR_LIB = $(readlink /etc/radixdlt/node/lib) && \
+JNI_URL=$(curl -s https://api.github.com/repos/radixdlt/babylon-node/releases/latest | \
+           jq -r '.assets[] | select(.browser_download_url|split("/")|last|test("^babylon-node-rust-arch-linux-x86_64-release-v[0-9.]*zip")) | .browser_download_url')
+echo "Found jni node url:" "$JNI_URL"
+JNI_ARCHIVE=$(basename "$JNI_URL")
+
+echo "Latest JNI version:" "$JNI_ARCHIVE"
+
+if [[ ! -f $JNI_ARCHIVE ]]
+then
+    echo "Downloading new JNI version ..."
+    mkdir -p $DIR_JNI && \
+    curl -OL "$JNI_URL" && \
+    unzip "$JNI_ARCHIVE" -d $DIR_JNI
+fi
+
+JNI_EXTRACTED=$(unzip -Z1 "$JNI_ARCHIVE" | head -n 1)
+if [[ ${#JNI_EXTRACTED} == 0 ]]
+then
+    echo "Error: Failed to read downloaded archive."
+    exit
+fi
+
+if [[ $(find "$DIR_JNI/$JNI_EXTRACTED" -type f | wc -l) == 0 ]]
+then
+    echo "Error: no files extracted."
+    exit
+fi
+
+if [[ $DIR_BIN = $(readlink /etc/radix-babylon/node/bin) && \
+      $DIR_LIB = $(readlink /etc/radix-babylon/node/lib) && \
+      $DIR_JNI = $(readlink /etc/radix-babylon/node/jni) && \
       "$1" != "force" ]]
 then
     echo "Radix node already up to date."
     exit
 fi
-
-mkdir -p /etc/radixdlt/node
 
 echo "Installing new node version" "$NODE_ARCHIVE" "..."
 
@@ -87,10 +120,12 @@ echo "Installing new node version" "$NODE_ARCHIVE" "..."
 if [[ $VALIDATOR_ADDRESS == "" ]]
 then
     if
-        rm -f /etc/radixdlt/node/bin && \
-        rm -f /etc/radixdlt/node/lib && \
-        ln -s "$DIR_BIN" /etc/radixdlt/node/bin && \
-        ln -s "$DIR_LIB" /etc/radixdlt/node/lib
+        rm -f /etc/radix-babylon/node/bin && \
+        rm -f /etc/radix-babylon/node/lib && \
+        rm -f /etc/radix-babylon/node/jni && \
+        ln -s "$DIR_BIN" /etc/radix-babylon/node/bin && \
+        ln -s "$DIR_LIB" /etc/radix-babylon/node/lib && \
+        ln -s "$DIR_JNI" /etc/radix-babylon/node/jni
     then
         echo "Successfully installed node files."
     else
@@ -114,12 +149,14 @@ then
 fi
 
 if
-    sudo systemctl stop radixdlt-node && \
-    rm -f /etc/radixdlt/node/bin && \
-    rm -f /etc/radixdlt/node/lib && \
-    ln -s "$DIR_BIN" /etc/radixdlt/node/bin && \
-    ln -s "$DIR_LIB" /etc/radixdlt/node/lib && \
-    sudo systemctl start radixdlt-node
+    sudo systemctl stop radix-babylon && \
+    rm -f /etc/radix-babylon/node/bin && \
+    rm -f /etc/radix-babylon/node/lib && \
+    rm -f /etc/radix-babylon/node/jni && \
+    ln -s "$DIR_BIN" /etc/radix-babylon/node/bin && \
+    ln -s "$DIR_LIB" /etc/radix-babylon/node/lib && \
+    ln -s "$DIR_JNI" /etc/radix-babylon/node/jni && \
+    sudo systemctl start radix-babylon
 then
     echo "Successfully installed node and restarted."
 else

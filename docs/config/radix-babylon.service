@@ -21,7 +21,3 @@ Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target
-
-
-# JAVA_OPTS="-Djava.library.path=$PWD" LD_PRELOAD="$PWD/libcorerust.so" \
-# ./core-rcnet-v3.1-r1/bin/core -config=default.config

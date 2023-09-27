@@ -635,6 +635,7 @@ Upgrade both nodes to Ubuntu 22.04 and node version 1.5.0 (if you didn't do that
 3. upgrade your other node (currently the full node - also Ubuntu and Radix node)
 
 ## Olympia Node Configuration Change
+These changes need to be applied to both nodes - your fullnode and validator.
 
 ### Bind Olympia End State endpoint to localhost
 
@@ -656,6 +657,11 @@ sudo nano /etc/radixdlt/node/default.config
 ```
 api.port=4333
 network.p2p.listen_port=30001
+```
+
+As fallback in case needed also update the port in the `/opt/radixdlt/switch-mode` script.
+```
+HOST="http://localhost:4333"
 ```
 
 After successful Babylon migration you can remove this firewall rule again with:

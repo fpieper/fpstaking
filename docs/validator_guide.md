@@ -657,6 +657,7 @@ sudo nano /etc/radixdlt/node/default.config
 ```
 api.port=4333
 network.p2p.listen_port=30001
+network.p2p.broadcast_port=30001
 ```
 
 As fallback in case needed also update the port in the `/opt/radixdlt/switch-mode` script.

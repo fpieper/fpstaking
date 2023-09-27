@@ -1,5 +1,5 @@
 [Unit]
-Description=Radix DLT Validator
+Description=Radix Babylon Validator
 After=local-fs.target
 After=network-online.target
 After=nss-lookup.target

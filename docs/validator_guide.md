@@ -716,5 +716,23 @@ The [Radix Node](#radix-node) section is updated to Babylon and will install the
 Best to install it first on your backup node to see if everything works fine and then on your current validator.
 If you feel more comfortable you can also switch validators for that process (and always installing on the backup node).
 
+Besides that, you want to run the Olympia and Babylon node on one machine in the same mode. On one server you are running both in validator mode and on one machine both in fullnode mode.
+
+## Verify Babylon node setup
+Finally we need to verify that the Babylon nodes are configured correctly and can connect to your (local) Olympia nodes.
+For that check the logs on both nodes with:
+```
+sudo journalctl -f -u radix-babylon --output=cat
+```
+
+This should give you log messages like these:
+```
+2023-09-27T00:29:26,854 [INFO/OlympiaGenesisService/OlympiaGenesisService] - Querying the Olympia node http://127.0.0.1:3400 for genesis data (this may take a few minutes)
+2023-09-27T00:29:26,899 [INFO/OlympiaGenesisService/OlympiaGenesisService] - Successfully connected to the Olympia mainnet node, but the end state hasn't yet been generated (will keep polling)...
+2023-09-27T00:29:27,901 [INFO/OlympiaGenesisService/OlympiaGenesisService] - Querying the Olympia node http://127.0.0.1:3400 for genesis data (with test payload) (this may take a few minutes)
+```
+
+In this case everything is fine and you are ready for the Babylon migration.
+
 ## Take your front seats
 Babylon is a huge milestone for Radix - take a seat and enjoy your front seats in the migration ;)
